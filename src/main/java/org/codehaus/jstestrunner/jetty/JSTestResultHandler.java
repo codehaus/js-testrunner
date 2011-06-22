@@ -40,15 +40,13 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 
 /**
  * Receive test results and store them in an internal cache.
- * <p>
- * TODO: Write some unit tests for this.
  */
 public class JSTestResultHandler extends AbstractHandler {
 
 	/**
 	 * Captures a test result.
 	 */
-	public class JSTestResult {
+	public static class JSTestResult {
 		public int failures;
 		public int passes;
 		public String message;
@@ -57,7 +55,7 @@ public class JSTestResultHandler extends AbstractHandler {
 	/**
 	 * Store a mapping of test results.
 	 */
-	private final Map<URL, JSTestResult> jsTestResults = new HashMap<URL, JSTestResult>();
+	private final Map<String, JSTestResult> jsTestResults = new HashMap<String, JSTestResult>();
 	private final Lock jsTestResultsLock = new ReentrantLock();
 	private final Condition newJsTestResults = jsTestResultsLock.newCondition();
 
@@ -78,7 +76,7 @@ public class JSTestResultHandler extends AbstractHandler {
 		jsTestResultsLock.lock();
 		try {
 			do {
-				jsTestResult = jsTestResults.get(url);
+				jsTestResult = jsTestResults.get(url.toString());
 				if (jsTestResult == null) {
 					boolean newJsTestResult;
 					try {
@@ -145,7 +143,7 @@ public class JSTestResultHandler extends AbstractHandler {
 
 				jsTestResultsLock.lock();
 				try {
-					jsTestResults.put(new URL(testUrl), jsTestResult);
+					jsTestResults.put(testUrl, jsTestResult);
 					newJsTestResults.signalAll();
 				} finally {
 					jsTestResultsLock.unlock();

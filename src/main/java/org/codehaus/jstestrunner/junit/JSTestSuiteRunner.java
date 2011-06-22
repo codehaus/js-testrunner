@@ -112,7 +112,7 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 	/**
 	 * A JavaScript execution failure object.
 	 */
-	private class JSTestFailure extends Failure {
+	private static class JSTestFailure extends Failure {
 		private final URL url;
 
 		public JSTestFailure(Description description, URL url, String message) {
