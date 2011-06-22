@@ -81,8 +81,8 @@
 	</organization>
 
 	<scm>
-		<connection>scm:git://git.codehaus.org/js-testrunner.git</connection>
-		<developerConnection>scm:ssh://git@git.codehaus.org/js-testrunner.git</developerConnection>
+		<connection>scm:git:git://git.codehaus.org/js-testrunner.git</connection>
+		<developerConnection>scm:git:ssh://git@git.codehaus.org/js-testrunner.git</developerConnection>
 		<url>http://git.codehaus.org/gitweb.cgi?p=js-testrunner.git</url>
 	</scm>
 	
