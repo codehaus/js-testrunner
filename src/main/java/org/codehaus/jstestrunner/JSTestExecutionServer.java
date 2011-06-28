@@ -194,7 +194,7 @@ public class JSTestExecutionServer {
 		int i = 0;
 		for (String arg : args) {
 			formattedArgs[i++] = String.format(arg, testRunnerAbsoluteFilePath,
-					"/testResults", testUrls);
+					testUrls);
 		}
 
 		if (logger.isLoggable(Level.FINE)) {

@@ -242,10 +242,9 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 			throw new InitializationError(
 					"The org.codehaus.jstestrunner.commandPattern property has not be declared."
 							+ " This pattern specifies how the test execution server shall be run."
-							+ " It is of the form: 'path/to/exe %1$s %2$s %3$s' where arg "
+							+ " It is of the form: 'path/to/exe %1$s %2$s' where arg "
 							+ "1 = the test runner js that will be run, "
-							+ "2 = path to POST test results to and "
-							+ "3 = the csv form of the urls representing the tests.");
+							+ "2 = the csv form of the urls representing the tests.");
 		}
 
 		// Test runner file path.
