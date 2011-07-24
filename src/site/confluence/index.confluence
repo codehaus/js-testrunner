@@ -1,0 +1,22 @@
+h1. JS Test Runner
+The goal of the JS Test Runner is to be able to test JavaScript (JS) code using an approach that Java programmers will feel comfortable with; particularly in the context of Continuous Integration (CI).
+
+JS Test Runner provides a [JUnit | http://www.junit.org/] ["test runner" | http://kentbeck.github.com/junit/javadoc/latest/org/junit/runner/Runner.html] based solution that calls upon a "headless browser" to execute unit tests. At present the runner uses [PhantomJS | http://www.phantomjs.org/] as its headless browser. PhantomJS is WebKit browser with no graphical user interface; it has a command line interface. JS Test Runner is also loosely coupled with JUnit so it should be possible to integrate it with others including [TestNG | http://testng.org/doc/index.html].
+
+{code}
+import org.codehaus.jstestrunner.junit.JSTestSuiteRunner;
+import org.junit.runner.RunWith;
+
+/**
+ * Run all JS tests associated with this project.
+ */
+@RunWith(JSTestSuiteRunner.class)
+public class SuiteUT {
+}
+{code}
+
+Being associated with JUnit means that JS Test Runner can be leveraged by Maven's Surefire plugin and indeed virtually anything else that runs JUnit tests. The combination of JS Test Runner and Surefire makes CI possible using familiar configuration. That said, there is no dependency on Maven by this project so other CI possibilities are available including being driven by ANT, make and so forth.
+
+{note}
+Please note that snapshots of this project are available at the [https://nexus.codehaus.org/content/repositories/snapshots] repository.
+{note}
