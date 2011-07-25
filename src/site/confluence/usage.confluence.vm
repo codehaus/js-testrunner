@@ -1,3 +1,65 @@
-{note}
-Coming soon.
-{note}
+h1. Usage
+
+h2. PhantomJS
+Before being able to use the JS Test Runner you will need a headless browser. At present JS Test Runner supports
+PhantomJS which is a WebKit browser with a Command Line Interface (CLI). Please visit the PhantomJS website and
+install the PhantomJS binary on all of the machines that will be running JS Test Runner. The website:
+
+[http://www.phantomjs.org/]
+
+The next thing you need to do is to tell JS Test Runner what the command line looks like to invoke it. This is
+done using a Java property. For example, on Mac OS X (depending on the path to PhantomJS):
+
+||Property||Value||
+|org.codehaus.jstestrunner.commandPattern|/Applications/phantomjs.app/Contents/MacOS/phantomjs '%1$s' %2$s|
+
+The first parameter (%1$s) allows JS Test Runner to provide a script that will open a set of urls that relate
+to QUnit tests. The set of urls is a comma separated list provided as parameter 2 (%2$s).
+
+When declaring the Java property from the command line on Unix you will need to escape the $ character and
+quote the entire string. For example, depending on where you install PhantomJS:
+
+{code}
+mvn test \
+ -Dorg.codehaus.jstestrunner.commandPattern=\
+ "/Applications/phantomjs.app/Contents/MacOS/phantomjs '%1\$s' %2\$s"
+{code}
+
+For windows it may look like this (again depending on where you install PhantomJS):
+
+{code}
+mvn test ^
+ -Dorg.codehaus.jstestrunner.commandPattern=^
+ "C:\Program Files\phantomjs-1.2.0-win32-dynamic\phantomjs.exe %1$s %2$s"
+{code}
+
+For Eclipse, you simply need to ensure that the property is declared under "Installed JREs" / "Default VM Arguments". You will
+not need to escape the $ there. For example:
+
+{code}
+-Dorg.codehaus.jstestrunner.commandPattern="/Applications/phantomjs.app/Contents/MacOS/phantomjs '%1$s' %2$s"
+{code}
+
+h2. Configuring JS Test Runner
+Configuration is performed using annotations below the @RunWith annotation. Here are the available options:
+
+* [\@ContextPath | apidocs/org/codehaus/jstestrunner/junit/JSTestSuiteRunner.ContextPath.html]
+* [\@Exclude | apidocs/org/codehaus/jstestrunner/junit/JSTestSuiteRunner.Exclude.html]
+* [\@Host | apidocs/org/codehaus/jstestrunner/junit/JSTestSuiteRunner.Host.html]
+* [\@Include | apidocs/org/codehaus/jstestrunner/junit/JSTestSuiteRunner.Include.html]
+* [\@ResourceBase | apidocs/org/codehaus/jstestrunner/junit/JSTestSuiteRunner.ResourceBase.html]
+* [\@ContextPath | apidocs/org/codehaus/jstestrunner/junit/JSTestSuiteRunner.TestRunnerFilePath.html]
+
+h2. Spring IoC
+At the time of writing Spring IoC 3.1.0M2 is being used to configure the context of the runner. If you're using Maven with
+an earlier Spring IoC version then you may need the following declaration to avoid dependency management conflicts:
+
+{code}
+<dependency>
+  <!-- We bring this in as a direct dependency for our test scope as the jstestrunner requires it. -->
+  <groupId>org.springframework</groupId>
+  <artifactId>spring-context</artifactId>
+  <version>3.1.0.M2</version>
+  <scope>test</scope>
+</dependency>
+{code}
