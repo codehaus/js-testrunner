@@ -112,6 +112,8 @@ public class JSTestResultHandler extends AbstractHandler {
 		if (target.equals("/testResults") && request.getMethod().equals("POST")
 				&& request.getContentType().contains("application/json")) {
 
+			JSTestResult jsTestResult = null;
+
 			JsonFactory f = new JsonFactory();
 			JsonParser jp = f.createJsonParser(request.getReader());
 
@@ -144,18 +146,10 @@ public class JSTestResultHandler extends AbstractHandler {
 			if (testUrl != null && failures != null && passes != null
 					&& message != null) {
 
-				JSTestResult jsTestResult = new JSTestResult();
+				jsTestResult = new JSTestResult();
 				jsTestResult.failures = failures;
 				jsTestResult.message = message;
 				jsTestResult.passes = passes;
-
-				jsTestResultsLock.lock();
-				try {
-					jsTestResults.put(testUrl, jsTestResult);
-					newJsTestResults.signalAll();
-				} finally {
-					jsTestResultsLock.unlock();
-				}
 
 				response.setStatus(HttpServletResponse.SC_NO_CONTENT);
 
@@ -166,6 +160,18 @@ public class JSTestResultHandler extends AbstractHandler {
 			response.setContentType("application/json");
 
 			baseRequest.setHandled(true);
+
+			// Minimally signal any threads to re-look at things. Store results
+			// if we received them.
+			jsTestResultsLock.lock();
+			try {
+				if (jsTestResult != null) {
+					jsTestResults.put(testUrl, jsTestResult);
+				}
+				newJsTestResults.signalAll();
+			} finally {
+				jsTestResultsLock.unlock();
+			}
 
 		}
 	}
