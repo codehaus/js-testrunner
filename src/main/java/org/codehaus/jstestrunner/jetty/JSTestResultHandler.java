@@ -65,13 +65,16 @@ public class JSTestResultHandler extends AbstractHandler {
 	 * 
 	 * @param url
 	 *            the url of the test.
+	 * @param waitIfUnavailable
+	 *            whether the timeout is in play.
 	 * @param time
 	 *            the time to wait.
 	 * @param unit
 	 *            the unit of time to wait.
 	 * @return the test result or null if it cannot be obtained.
 	 */
-	public JSTestResult getJsTestResult(URL url, long time, TimeUnit unit) {
+	public JSTestResult getJsTestResult(URL url, boolean waitIfUnavailable,
+			long time, TimeUnit unit) {
 		JSTestResult jsTestResult = null;
 		jsTestResultsLock.lock();
 		try {
@@ -80,7 +83,12 @@ public class JSTestResultHandler extends AbstractHandler {
 				if (jsTestResult == null) {
 					boolean newJsTestResult;
 					try {
-						newJsTestResult = newJsTestResults.await(time, unit);
+						if (waitIfUnavailable) {
+							newJsTestResult = newJsTestResults
+									.await(time, unit);
+						} else {
+							newJsTestResult = false;
+						}
 					} catch (InterruptedException e) {
 						newJsTestResult = false;
 					}

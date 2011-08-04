@@ -63,10 +63,13 @@ public class JSTestResultServer extends Object {
 	 * 
 	 * @param url
 	 *            the url to obtain the result for.
+	 * @param waitIfUnavailable
+	 *            whether to wait if the result is unavailable.
 	 * @return the test result or null if one cannot be obtained.
 	 */
-	public JSTestResult getJsTestResult(URL url) {
-		return jsTestResultHandler.getJsTestResult(url, 30, TimeUnit.SECONDS);
+	public JSTestResult getJsTestResult(URL url, boolean waitIfUnavailable) {
+		return jsTestResultHandler.getJsTestResult(url, waitIfUnavailable, 30,
+				TimeUnit.SECONDS);
 	}
 
 	/**
@@ -75,7 +78,7 @@ public class JSTestResultServer extends Object {
 	private void initWebServer() {
 
 		webServer = new Server();
-		
+
 		SelectChannelConnector connector = new SelectChannelConnector();
 		connector.setPort(port);
 		webServer.addConnector(connector);

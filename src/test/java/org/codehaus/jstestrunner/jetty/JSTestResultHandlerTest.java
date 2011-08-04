@@ -81,7 +81,7 @@ public class JSTestResultHandlerTest {
 
 		// Now verify that the test result is what we're expecting.
 		JSTestResult result = handler.getJsTestResult(new URL("http:/a.html"),
-				0L, TimeUnit.MICROSECONDS);
+				false, 0L, TimeUnit.MICROSECONDS);
 		assertNull(result);
 	}
 
@@ -115,7 +115,7 @@ public class JSTestResultHandlerTest {
 
 		// Now verify that the test result is what we're expecting.
 		JSTestResult result = handler.getJsTestResult(new URL("http:/a.html"),
-				0L, TimeUnit.MICROSECONDS);
+				false, 0L, TimeUnit.MICROSECONDS);
 		assertNull(result);
 	}
 
@@ -157,9 +157,29 @@ public class JSTestResultHandlerTest {
 
 		// Now verify that the test result is what we're expecting.
 		JSTestResult result = handler.getJsTestResult(new URL("http:/a.html"),
-				0L, TimeUnit.MICROSECONDS);
+				false, 30L, TimeUnit.SECONDS);
 		assertEquals(0, result.failures);
 		assertEquals("some message", result.message);
 		assertEquals(1, result.passes);
+	}
+
+	/**
+	 * Test the timeout handling of a regular message.
+	 * 
+	 * @throws ServletException
+	 *             if something goes wrong.
+	 * @throws IOException
+	 *             if something goes wrong.
+	 */
+	@Test
+	public void testHandleTimeout() throws IOException, ServletException {
+
+		// Setup the test.
+		JSTestResultHandler handler = new JSTestResultHandler();
+
+		// Now verify that the test result is what we're expecting.
+		JSTestResult result = handler.getJsTestResult(new URL("http:/a.html"),
+				true, 1L, TimeUnit.SECONDS);
+		assertNull(result);
 	}
 }

@@ -217,6 +217,24 @@ public class JSTestExecutionServer {
 		return urls;
 	}
 
+	/**
+	 * Tests whether the executor is still running.
+	 * 
+	 * @return true if it is.
+	 */
+	public boolean isRunning() {
+		if (process != null) {
+			try {
+				process.exitValue();
+				return false;
+			} catch (IllegalThreadStateException e) {
+				return true;
+			}
+		} else {
+			return false;
+		}
+	}
+
 	@Resource
 	public void setCommandPattern(String commandPattern) {
 		this.commandPattern = commandPattern;
