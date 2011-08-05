@@ -36,11 +36,18 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.jstestrunner.TestResultProducer;
 import org.codehaus.jstestrunner.jetty.JSTestResultHandler.JSTestResult;
 import org.eclipse.jetty.server.Request;
 import org.junit.Test;
 
 public class JSTestResultHandlerTest {
+
+	private final TestResultProducer testResultProducer = new TestResultProducer() {
+		public boolean isAvailable() {
+			return true;
+		}
+	};
 
 	/**
 	 * Test handling of an irregular message i.e. with no "failure" property in
@@ -81,7 +88,7 @@ public class JSTestResultHandlerTest {
 
 		// Now verify that the test result is what we're expecting.
 		JSTestResult result = handler.getJsTestResult(new URL("http:/a.html"),
-				false, 0L, TimeUnit.MICROSECONDS);
+				testResultProducer, 0L, TimeUnit.MICROSECONDS);
 		assertNull(result);
 	}
 
@@ -115,7 +122,7 @@ public class JSTestResultHandlerTest {
 
 		// Now verify that the test result is what we're expecting.
 		JSTestResult result = handler.getJsTestResult(new URL("http:/a.html"),
-				false, 0L, TimeUnit.MICROSECONDS);
+				testResultProducer, 0L, TimeUnit.MICROSECONDS);
 		assertNull(result);
 	}
 
@@ -157,7 +164,7 @@ public class JSTestResultHandlerTest {
 
 		// Now verify that the test result is what we're expecting.
 		JSTestResult result = handler.getJsTestResult(new URL("http:/a.html"),
-				false, 30L, TimeUnit.SECONDS);
+				testResultProducer, 30L, TimeUnit.SECONDS);
 		assertEquals(0, result.failures);
 		assertEquals("some message", result.message);
 		assertEquals(1, result.passes);
@@ -179,7 +186,7 @@ public class JSTestResultHandlerTest {
 
 		// Now verify that the test result is what we're expecting.
 		JSTestResult result = handler.getJsTestResult(new URL("http:/a.html"),
-				true, 1L, TimeUnit.SECONDS);
+				testResultProducer, 1L, TimeUnit.SECONDS);
 		assertNull(result);
 	}
 }

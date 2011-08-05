@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import org.codehaus.jstestrunner.TestResultProducer;
 import org.codehaus.jstestrunner.jetty.JSTestResultHandler.JSTestResult;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -63,12 +64,14 @@ public class JSTestResultServer extends Object {
 	 * 
 	 * @param url
 	 *            the url to obtain the result for.
-	 * @param waitIfUnavailable
-	 *            whether to wait if the result is unavailable.
+	 * @param testResultProducer
+	 *            Used to determine whether we are in a position to wait for
+	 *            results.
 	 * @return the test result or null if one cannot be obtained.
 	 */
-	public JSTestResult getJsTestResult(URL url, boolean waitIfUnavailable) {
-		return jsTestResultHandler.getJsTestResult(url, waitIfUnavailable, 30,
+	public JSTestResult getJsTestResult(URL url,
+			TestResultProducer testResultProducer) {
+		return jsTestResultHandler.getJsTestResult(url, testResultProducer, 30,
 				TimeUnit.SECONDS);
 	}
 

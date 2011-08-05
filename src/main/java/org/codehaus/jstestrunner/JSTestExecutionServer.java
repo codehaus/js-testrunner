@@ -42,7 +42,7 @@ import javax.annotation.Resource;
 /**
  * An execution server executes JavaScript tests represented by a list of urls.
  */
-public class JSTestExecutionServer {
+public class JSTestExecutionServer implements TestResultProducer {
 
 	private static Logger logger = Logger.getLogger(JSTestExecutionServer.class
 			.getName());
@@ -222,7 +222,7 @@ public class JSTestExecutionServer {
 	 * 
 	 * @return true if it is.
 	 */
-	public boolean isRunning() {
+	public boolean isAvailable() {
 		if (process != null) {
 			try {
 				process.exitValue();

@@ -150,7 +150,7 @@ public class JSTestSuiteRunnerService {
 	 * @return the test result.
 	 */
 	public JSTestResult runTest(URL url) {
-		return jSTestResultServer.getJsTestResult(url, jSTestExecutionServer.isRunning());
+		return jSTestResultServer.getJsTestResult(url, jSTestExecutionServer);
 	}
 
 	@Inject

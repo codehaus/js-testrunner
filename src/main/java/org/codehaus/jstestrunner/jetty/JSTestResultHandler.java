@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
+import org.codehaus.jstestrunner.TestResultProducer;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
@@ -65,16 +66,17 @@ public class JSTestResultHandler extends AbstractHandler {
 	 * 
 	 * @param url
 	 *            the url of the test.
-	 * @param waitIfUnavailable
-	 *            whether the timeout is in play.
+	 * @param testResultProducer
+	 *            Used to determine whether we are in a position to wait for
+	 *            results.
 	 * @param time
 	 *            the time to wait.
 	 * @param unit
 	 *            the unit of time to wait.
 	 * @return the test result or null if it cannot be obtained.
 	 */
-	public JSTestResult getJsTestResult(URL url, boolean waitIfUnavailable,
-			long time, TimeUnit unit) {
+	public JSTestResult getJsTestResult(URL url,
+			TestResultProducer testResultProducer, long time, TimeUnit unit) {
 		JSTestResult jsTestResult = null;
 		jsTestResultsLock.lock();
 		try {
@@ -83,7 +85,7 @@ public class JSTestResultHandler extends AbstractHandler {
 				if (jsTestResult == null) {
 					boolean newJsTestResult;
 					try {
-						if (waitIfUnavailable) {
+						if (testResultProducer.isAvailable()) {
 							newJsTestResult = newJsTestResults
 									.await(time, unit);
 						} else {
