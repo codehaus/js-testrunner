@@ -69,7 +69,7 @@ function processTestAndLoadNext(testUrls) {
 						passes = 0;
 						messages = "";
 
-						for (j in testResults) {
+						for (j = 0; j < testResults.length; ++j) {
 							testResult = testResults[j];
 							if (testResult.moduleName !== null) {
 								message = "[" + testResult.moduleName + "] ";
@@ -78,12 +78,12 @@ function processTestAndLoadNext(testUrls) {
 							}
 							message += testResult.testName + ": failed: " + testResult.failed
 									+ " passed: " + testResult.passed;
-							for (i in testResult.details) {
+							for (i = 0; i < testResult.details.length; ++i) {
 								message += "\n  " + testResult.details[i].message + ", expected: "
 										+ testResult.details[i].expected;
 							}
 
-							if (j !== "0") {
+							if (j > 0) {
 								messages += "\n";
 							}
 							messages += message;
