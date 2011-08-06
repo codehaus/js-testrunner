@@ -31,6 +31,14 @@
 			<timezone>10</timezone>
 			<url>http://christopherhunt-software.blogspot.com/</url>
 		</developer>
+		<developer>
+			<id>johnomalley</id>
+			<name>John O' Malley</name>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
 	</developers>
 	
 	<distributionManagement>
