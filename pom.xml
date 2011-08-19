@@ -184,7 +184,7 @@
 					<execution>
 						<phase>process-resources</phase>
 						<goals>
-							<goal>main-jslint</goal>
+							<goal>jslint</goal>
 						</goals>
 					</execution>
 				</executions>
