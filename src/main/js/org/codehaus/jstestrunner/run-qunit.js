@@ -23,7 +23,14 @@
  * Process the test.
  */
 function processTestAndLoadNext(testUrls) {
-	var testPage, testUrl;
+	var testPage, testUrl, loadingTime, loadingTimeout;
+	
+	// loadingTimeout is how long (in MS) we wait for testPage.evaluate
+	// to succesfully evaluate the QUnit HTML. If this time is exceeded,
+	// then we proceed to the next test or end processing if no more tests
+	// exist.
+	loadingTime = 0;
+	loadingTimeout = 20000;
 	
 	testUrl = testUrls[0];
 	testUrls.splice(0, 1);
@@ -218,6 +225,26 @@ function processTestAndLoadNext(testUrls) {
 					}
 					
 					processTestAndLoadNext(testUrls);
+					
+				} else {
+					// Increase loading time
+					loadingTime += 100;
+					
+					// If we're reached the timeout waiting for this test:
+					if (loadingTime >= loadingTimeout) {
+						
+						console.log("Unable to process test results, timed out");
+						
+						// Continue to the next test
+						clearInterval(testResultChecker);
+						
+						// Run the next test or exit if no more.
+						if (testUrls.length === 0) {
+							phantom.exit();
+						}
+						
+						processTestAndLoadNext(testUrls);
+					}
 				}
 				
 			}, 100);
