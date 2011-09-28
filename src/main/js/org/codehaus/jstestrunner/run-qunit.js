@@ -23,14 +23,15 @@
  * Process the test.
  */
 function processTestAndLoadNext(testUrls) {
-	var testPage, testUrl, loadingDelay, loadingTime, loadingTimeout;
+	var testPage, testUrl, loadingTime, loadingTimeout;
 	
 	// loadingTimeout is how long (in MS) we wait for testPage.evaluate
 	// to succesfully evaluate the QUnit HTML. If this time is exceeded,
 	// then we proceed to the next test or end processing if no more tests
 	// exist.
-	loadingTime = 0;
-	loadingDelay = 100;
+	loadingTime = new Date().getTime();
+	// This should be less than the timeout declared in
+	// JSTestResultServer.java (which is currently 30s)
 	loadingTimeout = 20000;
 	
 	testUrl = testUrls[0];
@@ -234,18 +235,16 @@ function processTestAndLoadNext(testUrls) {
 					proceedWithTests();
 					
 				} else {
-					// Increase loading time
-					loadingTime += loadingDelay;
 					
 					// If we're reached the timeout waiting for this test:
-					if (loadingTime >= loadingTimeout) {
+					if (new Date().getTime() >= loadingTime + loadingTimeout) {
 						console.log("Unable to process test results, timed out");
 						
 						proceedWithTests();
 					}
 				}
 				
-			}, loadingDelay);
+			}, 100);
 
 		} else {
 			phantom.exit();
