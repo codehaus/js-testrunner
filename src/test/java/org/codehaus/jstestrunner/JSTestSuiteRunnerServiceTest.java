@@ -43,7 +43,7 @@ public class JSTestSuiteRunnerServiceTest {
 		int port = 9080;
 		String[] resourceBases = new String[] { "target" + File.separator
 				+ "test-classes" };
-		String[] includes = new String[] { "**/*.html" };
+		String[] includes = new String[] { "**/QUnitTest.html" };
 		String[] excludes = new String[0];
 		List<URL> urls = JSTestSuiteRunnerService.scanTestFiles(host, port,
 				resourceBases, includes, excludes);
