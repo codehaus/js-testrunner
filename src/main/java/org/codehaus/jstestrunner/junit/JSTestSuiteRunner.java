@@ -30,16 +30,16 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.codehaus.jstestrunner.JSTestSuiteRunnerConfig;
+import org.codehaus.jstestrunner.JSTestExecutionServer;
 import org.codehaus.jstestrunner.JSTestSuiteRunnerService;
 import org.codehaus.jstestrunner.jetty.JSTestResultHandler.JSTestResult;
+import org.codehaus.jstestrunner.jetty.JSTestResultServer;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
  * A JavaScript Test Runner Suite specifically for JUnit. It allows a pattern of
@@ -263,15 +263,19 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 		urls = JSTestSuiteRunnerService.scanTestFiles(host, port,
 				resourceBases, includes, excludes);
 
-		// Establish our application context.
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(JSTestSuiteRunnerConfig.class);
-		JSTestSuiteRunnerConfig config = ctx
-				.getBean(JSTestSuiteRunnerConfig.class);
-		config.init(commandPattern, contextPath, excludes, host, includes,
-				port, resourceBases, testRunnerFilePath, urls);
-		ctx.refresh();
-		jSTestSuiteRunnerService = ctx.getBean(JSTestSuiteRunnerService.class);
+		jSTestSuiteRunnerService = new JSTestSuiteRunnerService();
+		JSTestExecutionServer jSTestExecutionServer = new JSTestExecutionServer();
+		jSTestExecutionServer.setCommandPattern(commandPattern);
+		jSTestExecutionServer.setTestRunnerFilePath(testRunnerFilePath);
+		jSTestExecutionServer.setUrls(urls);
+		
+		JSTestResultServer jSTestResultServer = new JSTestResultServer();
+		jSTestResultServer.setContextPath(contextPath);
+		jSTestResultServer.setPort(port);
+		jSTestResultServer.setResourceBases(resourceBases);
+		
+		jSTestSuiteRunnerService.setjSTestExecutionServer(jSTestExecutionServer);
+		jSTestSuiteRunnerService.setjSTestResultServer(jSTestResultServer);
 	}
 
 	/**
