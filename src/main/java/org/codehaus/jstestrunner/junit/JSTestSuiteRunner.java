@@ -171,9 +171,7 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 
 		// We don't care to see what these packages are up to unless there's
 		// some complaining to be done.
-		Logger logger = Logger.getLogger("org.springframework");
-		logger.setLevel(Level.WARNING);
-		logger = Logger.getLogger("org.eclipse.jetty");
+		Logger logger = Logger.getLogger("org.eclipse.jetty");
 		logger.setLevel(Level.WARNING);
 
 		// Set up our host.
