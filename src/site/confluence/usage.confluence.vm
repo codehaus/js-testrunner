@@ -49,17 +49,3 @@ Configuration is performed using annotations below the @RunWith annotation. Here
 * [\@Include | apidocs/org/codehaus/jstestrunner/junit/JSTestSuiteRunner.Include.html]
 * [\@ResourceBase | apidocs/org/codehaus/jstestrunner/junit/JSTestSuiteRunner.ResourceBase.html]
 * [\@ContextPath | apidocs/org/codehaus/jstestrunner/junit/JSTestSuiteRunner.TestRunnerFilePath.html]
-
-h2. Spring IoC
-At the time of writing Spring IoC 3.1.0M2 is being used to configure the context of the runner. If you're using Maven with
-an earlier Spring IoC version then you may need the following declaration to avoid dependency management conflicts:
-
-{code}
-<dependency>
-  <!-- We bring this in as a direct dependency for our test scope as the jstestrunner requires it. -->
-  <groupId>org.springframework</groupId>
-  <artifactId>spring-context</artifactId>
-  <version>3.1.0.M2</version>
-  <scope>test</scope>
-</dependency>
-{code}
