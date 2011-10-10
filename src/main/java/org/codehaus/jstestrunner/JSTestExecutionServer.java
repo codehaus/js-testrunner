@@ -265,8 +265,8 @@ public class JSTestExecutionServer implements TestResultProducer {
 		process = Runtime.getRuntime().exec(getCommandArgs());
 
 		// Get STDOUT from the process and discard it
-        StreamGobbler inputGobbler = new StreamGobbler(process.getInputStream());
-        inputGobbler.start();
+        StreamDiscarder inputDiscarder = new StreamDiscarder(process.getInputStream());
+        inputDiscarder.start();
         
 		// If we're logging at FINE level, log STDERR output and the process exit code
 		if (logger.isLoggable(Level.FINE)) {
@@ -288,8 +288,8 @@ public class JSTestExecutionServer implements TestResultProducer {
 			}
 		} else {
 			// Get STDERR from the process and discard it
-	        StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream());
-	        errorGobbler.start();
+			StreamDiscarder errorDiscarder = new StreamDiscarder(process.getErrorStream());
+			errorDiscarder.start();
 		}
 
 	}
