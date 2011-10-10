@@ -1,46 +1,85 @@
 package org.codehaus.jstestrunner;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 
 /**
- * StreamGobbler; handle an inputstream in it's own thread, either writing to an
+ * StreamGobbler; read from an InputStream in it's own thread, either writing to an
  * output stream with a TYPE marker, or discarding.
  * 
  * Reference: http://www.javaworld.com/javaworld/jw-12-2000/jw-1229-traps.html?page=4
+ * 
+ * @author Ben Jones
  */
 class StreamGobbler extends Thread {
-	InputStream is;
-	String type;
-	OutputStream os;
+	InputStream inputStream;
+	OutputStream outputStream;
 
-	StreamGobbler(InputStream is, String type) {
-		this(is, type, null);
+	/**
+	 * Construct StreamGobbler which discards input.
+	 * @param inputStream InputStream to read from.
+	 */
+	StreamGobbler(InputStream inputStream) {
+		this(inputStream, null);
 	}
 
-	StreamGobbler(InputStream is, String type, OutputStream redirect) {
-		this.is = is;
-		this.type = type;
-		this.os = redirect;
+	/**
+	 * Construct StreamGobbler to write to an OutputStream.
+	 * @param inputStream InputStream to read from.
+	 * @param outputStream OutputStream to send the InputStream to.
+	 */
+	StreamGobbler(InputStream inputStream, OutputStream outputStream) {
+		this.inputStream = inputStream;
+		this.outputStream = outputStream;
 	}
 
+	/**
+	 * Thread.run method which will 'gobble' all input from the input stream and
+	 * either write it to the OutputStream the object was initialized with, or 
+	 * discard it if no OutputStream was supplied.
+	 */
 	public void run() {
+		// Setup a PrintWriter if we have an OutputStream
+		PrintWriter printWriter = null;
+		if (outputStream != null) {
+			printWriter = new PrintWriter(outputStream);
+		}
+		// Setup input stream buffered reader
+		InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+		
 		try {
-			PrintWriter pw = null;
-			if (os != null)
-				pw = new PrintWriter(os);
-
-			InputStreamReader isr = new InputStreamReader(is);
-			BufferedReader br = new BufferedReader(isr);
+			// Read all lines from the input stream
 			String line = null;
-			while ((line = br.readLine()) != null) {
-				if (pw != null)
-					pw.println(line);
-				System.out.println(type + ">" + line);
-			}
-			if (pw != null)
-				pw.flush();
+			while ((line = bufferedReader.readLine()) != null) {
+				// If we have an output writer, write each line to it
+				if (printWriter != null) {
+					printWriter.println(line);
+				}
+			}			
+			
 		} catch (IOException ioe) {
+			// On IO error reading the input stream, print the stack trace
 			ioe.printStackTrace();
+			
+		} finally {
+			// Close the input reader
+			if (bufferedReader != null) {
+				try {
+					bufferedReader.close();
+				} catch(IOException ignore) {}
+			}
+		}
+
+		// If we have an output writer, flush and close it
+		if (printWriter != null) {
+			printWriter.flush();
+			printWriter.close();
 		}
 	}
+	
 }
