@@ -263,16 +263,16 @@ public class JSTestExecutionServer implements TestResultProducer {
 		ProcessBuilder builder = new ProcessBuilder(getCommandArgs());
 		builder.redirectErrorStream(true);
 		process = builder.start();
-        
+
 		if (logger.isLoggable(Level.FINE)) {
 			// If we're logging at FINE level, log process output and the process exit code
-			ProcessLogger processLogger = new ProcessLogger(process);
+			ProcessLogger processLogger = new ProcessLogger(process, logger);
 			processLogger.start();
 
 		} else {
 			// If we're not logging at FINE level, discard the process output
-			StreamDiscarder streamDiscarder = new StreamDiscarder(process.getInputStream());
-			streamDiscarder.start();
+			ProcessLogger processLogger = new ProcessLogger(process, null);
+			processLogger.start();
 		}
 
 	}
