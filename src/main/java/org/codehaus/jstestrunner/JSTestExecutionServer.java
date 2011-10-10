@@ -256,7 +256,7 @@ public class JSTestExecutionServer implements TestResultProducer {
 	 * @throws IOException
 	 *             if something goes wrong.
 	 */
-	public void start() throws IOException {
+	public void start() throws IOException {	
 		// Ensure that the bootstrap file is available for execution from the
 		// file system.
 		copyTestRunnerFileIfNotExists();
@@ -264,11 +264,13 @@ public class JSTestExecutionServer implements TestResultProducer {
 		// Get the command args and execute them.
 		process = Runtime.getRuntime().exec(getCommandArgs());
 
-		// Given the appropriate logging level output the error stream of the
-		// execution.
+		// Get STDOUT from the process and discard it
+        StreamGobbler inputGobbler = new StreamGobbler(process.getInputStream(), "STDOUT");
+        inputGobbler.start();
+        
+		// If we're logging at FINE level, log STDERR output and the process exit code
 		if (logger.isLoggable(Level.FINE)) {
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					process.getErrorStream()));
+			BufferedReader br = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			try {
 				String line;
 				while ((line = br.readLine()) != null) {
@@ -284,6 +286,10 @@ public class JSTestExecutionServer implements TestResultProducer {
 				logger.log(Level.WARNING,
 						"Problem waiting for completion." + e.toString());
 			}
+		} else {
+			// Get STDERR from the process and discard it
+	        StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream(), "STDERR");
+	        errorGobbler.start();
 		}
 
 	}
