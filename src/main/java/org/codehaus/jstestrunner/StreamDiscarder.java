@@ -22,7 +22,7 @@ class StreamDiscarder extends Thread {
 	}
 
 	/**
-	 * Thread.run method which will 'gobble' all input from the input stream and
+	 * Thread.run method which will read all input from the input stream and
 	 * discard it.
 	 */
 	public void run() {
