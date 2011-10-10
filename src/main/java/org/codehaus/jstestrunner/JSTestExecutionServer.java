@@ -21,12 +21,10 @@ package org.codehaus.jstestrunner;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -256,40 +254,25 @@ public class JSTestExecutionServer implements TestResultProducer {
 	 * @throws IOException
 	 *             if something goes wrong.
 	 */
-	public void start() throws IOException {	
+	public void start() throws IOException {			
 		// Ensure that the bootstrap file is available for execution from the
 		// file system.
 		copyTestRunnerFileIfNotExists();
 
-		// Get the command args and execute them.
-		process = Runtime.getRuntime().exec(getCommandArgs());
-
-		// Get STDOUT from the process and discard it
-        StreamDiscarder inputDiscarder = new StreamDiscarder(process.getInputStream());
-        inputDiscarder.start();
+		// Get the command args and execute them, merging STDOUT and STDERR
+		ProcessBuilder builder = new ProcessBuilder(getCommandArgs());
+		builder.redirectErrorStream(true);
+		process = builder.start();
         
-		// If we're logging at FINE level, log STDERR output and the process exit code
 		if (logger.isLoggable(Level.FINE)) {
-			BufferedReader br = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			try {
-				String line;
-				while ((line = br.readLine()) != null) {
-					logger.fine(line);
-				}
-			} finally {
-				br.close();
-			}
-			try {
-				int exitVal = process.waitFor();
-				logger.log(Level.FINE, "Process exitValue: " + exitVal);
-			} catch (InterruptedException e) {
-				logger.log(Level.WARNING,
-						"Problem waiting for completion." + e.toString());
-			}
+			// If we're logging at FINE level, log process output and the process exit code
+			ProcessLogger processLogger = new ProcessLogger(process);
+			processLogger.start();
+
 		} else {
-			// Get STDERR from the process and discard it
-			StreamDiscarder errorDiscarder = new StreamDiscarder(process.getErrorStream());
-			errorDiscarder.start();
+			// If we're not logging at FINE level, discard the process output
+			StreamDiscarder streamDiscarder = new StreamDiscarder(process.getInputStream());
+			streamDiscarder.start();
 		}
 
 	}

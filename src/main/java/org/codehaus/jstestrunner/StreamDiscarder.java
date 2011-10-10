@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * StreamDiscarder; read from an InputStream in its own thread and discard.
@@ -11,7 +13,8 @@ import java.io.InputStreamReader;
  * @author Ben Jones
  */
 class StreamDiscarder extends Thread {
-	InputStream inputStream;
+	private static Logger logger = Logger.getLogger(StreamDiscarder.class.getName());
+	private InputStream inputStream;
 
 	/**
 	 * Construct StreamDiscarder which discards input.
@@ -26,7 +29,6 @@ class StreamDiscarder extends Thread {
 	 * discard it.
 	 */
 	public void run() {
-		// Setup input stream buffered reader
 		InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 		
@@ -35,14 +37,14 @@ class StreamDiscarder extends Thread {
 			while (bufferedReader.readLine() != null) {}			
 			
 		} catch (IOException ioe) {
-			// On IO error reading the input stream, print the stack trace
-			ioe.printStackTrace();
+			logger.log(Level.WARNING, ioe.getLocalizedMessage());
 			
 		} finally {
-			// Close the input reader
 			try {
 				bufferedReader.close();
-			} catch(IOException ignore) {}
+			} catch(IOException ioe) {
+				logger.log(Level.WARNING, ioe.getLocalizedMessage());
+			}
 		}
 	}
 	
