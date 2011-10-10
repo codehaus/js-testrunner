@@ -32,8 +32,7 @@ class StreamDiscarder extends Thread {
 		
 		try {
 			// Read all lines from the input stream and do nothing with them
-			String line = null;
-			while ((line = bufferedReader.readLine()) != null) {}			
+			while (bufferedReader.readLine() != null) {}			
 			
 		} catch (IOException ioe) {
 			// On IO error reading the input stream, print the stack trace
