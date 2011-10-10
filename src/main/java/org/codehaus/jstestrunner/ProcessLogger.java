@@ -52,14 +52,14 @@ class ProcessLogger extends Thread {
 			}			
 			
 		} catch (IOException e) {
-			logger.log(Level.WARNING, e.getLocalizedMessage());
+			logger.log(Level.WARNING, e.toString());
 			
 		} finally {
 			// Close the input reader
 			try {
 				bufferedReader.close();
 			} catch(IOException e) {
-				logger.log(Level.WARNING, e.getLocalizedMessage());
+				logger.log(Level.WARNING, e.toString());
 			}
 		}
 		
