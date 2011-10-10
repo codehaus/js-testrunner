@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
- * StreamDiscarder; read from an InputStream in it's own thread and discard.
+ * StreamDiscarder; read from an InputStream in its own thread and discard.
  * 
  * @author Ben Jones
  */
