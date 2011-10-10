@@ -71,6 +71,11 @@ public class JSTestExecutionServer implements TestResultProducer {
 	 * The urls relating to the test.
 	 */
 	private List<URL> urls;
+	
+	/**
+	 * The logger attached to the process being run.
+	 */
+	private ProcessLogger processLogger;
 
 	/**
 	 * Make a copy of the js file that will drive the execution engine. Copies
@@ -258,23 +263,17 @@ public class JSTestExecutionServer implements TestResultProducer {
 		// Ensure that the bootstrap file is available for execution from the
 		// file system.
 		copyTestRunnerFileIfNotExists();
-
+		
 		// Get the command args and execute them, merging STDOUT and STDERR
 		ProcessBuilder builder = new ProcessBuilder(getCommandArgs());
 		builder.redirectErrorStream(true);
 		process = builder.start();
 
-		if (logger.isLoggable(Level.FINE)) {
-			// If we're logging at FINE level, log process output and the process exit code
-			ProcessLogger processLogger = new ProcessLogger(process, logger);
-			processLogger.start();
-
-		} else {
-			// If we're not logging at FINE level, discard the process output
-			ProcessLogger processLogger = new ProcessLogger(process, null);
-			processLogger.start();
-		}
-
+		// If we're logging at FINE level, log process output and the process exit code
+		// If we're not logging at FINE level, discard the process output
+		Logger processLoggingReference = (logger.isLoggable(Level.FINE) ? logger : null);		
+		processLogger = new ProcessLogger(process, processLoggingReference);
+		processLogger.start();
 	}
 
 	/**
@@ -283,6 +282,16 @@ public class JSTestExecutionServer implements TestResultProducer {
 	public void stop() {
 		if (process != null) {
 			process.destroy();
+			
+			// Wait for the process to exit; if it's the last process we want the
+			// ProcessLogger to have a chance to log the exit value
+			if (processLogger.isAlive()) {
+				try {
+					processLogger.join();
+				} catch (InterruptedException e) {
+					logger.log(Level.FINE, "Exception waiting for process logger to exit: " + e.toString());
+				}
+			}
 		}
 	}
 

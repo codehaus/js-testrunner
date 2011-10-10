@@ -65,6 +65,18 @@ class ProcessLogger extends Thread {
 		
 		// If we have a process logger, attempt to determine and log the exit code
 		if (processLogger != null) {
+			logExitValue(process, processLogger);
+		}
+	}
+	
+	/**
+	 * Attempt to log the exit value of the process to the supplied logger.
+	 * Will block until the process exits.
+	 * @param process The process to log the exit value for. 
+	 * @param processLogger The logger to log to.
+	 */
+	public static void logExitValue(Process process, Logger processLogger) {
+		if (processLogger != null) {
 			try {
 				int exitVal = process.waitFor();
 				processLogger.log(Level.FINE, "Process exitValue: " + exitVal);
