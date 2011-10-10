@@ -33,9 +33,7 @@ public class LoggingJSTestSuiteRunner extends JSTestSuiteRunner {
 		super(testClass);
 
 		// We want this test to show all.
-		Logger logger = Logger.getLogger("org.springframework");
-		logger.setLevel(Level.FINE);
-		logger = Logger.getLogger("org.eclipse.jetty");
+		Logger logger = Logger.getLogger("org.eclipse.jetty");
 		logger.setLevel(Level.FINE);
 		logger = Logger.getLogger(JSTestExecutionServer.class.getName());
 		logger.setLevel(Level.FINE);
