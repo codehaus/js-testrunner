@@ -289,7 +289,7 @@ public class JSTestExecutionServer implements TestResultProducer {
 				try {
 					processLogger.join();
 				} catch (InterruptedException e) {
-					logger.log(Level.FINE, "Exception waiting for process logger to exit: " + e.toString());
+					logger.log(Level.WARNING, "Exception waiting for process logger to exit: " + e.toString());
 				}
 			}
 		}
