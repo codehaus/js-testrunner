@@ -94,7 +94,7 @@ class ProcessLogger extends Thread {
 	 * @param process The process to log the exit value for. 
 	 * @param processLogger The logger to log to.
 	 */
-	public static void logExitValue(Process process, Logger processLogger) {
+	private static void logExitValue(Process process, Logger processLogger) {
 		if (processLogger != null) {
 			try {
 				int exitVal = process.waitFor();
