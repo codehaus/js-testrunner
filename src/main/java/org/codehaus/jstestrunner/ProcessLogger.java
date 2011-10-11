@@ -32,9 +32,12 @@ import java.util.logging.Logger;
  * 
  * @author Ben Jones
  */
-class ProcessLogger extends Thread {
+public class ProcessLogger extends Thread {
+	/** The ProcessLogger Logger for internal log statements */
 	private static Logger logger = Logger.getLogger(ProcessLogger.class.getName());
+	/** The logger used to log messages related to the process */
 	private Logger loggerForProcess;
+	/** The process being monitored */
 	private Process process;
 
 	/**
