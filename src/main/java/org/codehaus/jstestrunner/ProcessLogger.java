@@ -34,7 +34,7 @@ import java.util.logging.Logger;
  */
 class ProcessLogger extends Thread {
 	private static Logger logger = Logger.getLogger(ProcessLogger.class.getName());
-	private Logger processLogger;
+	private Logger loggerForProcess;
 	private Process process;
 
 	/**
@@ -42,12 +42,12 @@ class ProcessLogger extends Thread {
 	 * provided then information is logged to that logger. If it is not provided, then
 	 * output is discarded.
 	 * @param process The process to handle output for.
-	 * @param processLogger (optional) The logger to log messages to. If null, then the
+	 * @param loggerForProcess (optional) The logger to log messages to. If null, then the
 	 * input stream will be read and its contents discarded.
 	 */
-	ProcessLogger(Process process, Logger processLogger) {
+	ProcessLogger(Process process, Logger loggerForProcess) {
 		this.process = process;
-		this.processLogger = processLogger;
+		this.loggerForProcess = loggerForProcess;
 	}
 
 	/**
@@ -65,8 +65,8 @@ class ProcessLogger extends Thread {
 			// Read every line of input
 			while ((line = bufferedReader.readLine()) != null) {
 				// If we have a process logger, log each line. Otherwise discard.
-				if (processLogger != null) {
-					processLogger.log(Level.FINE, line);
+				if (loggerForProcess != null) {
+					loggerForProcess.log(Level.FINE, line);
 				}
 			}			
 			
@@ -83,8 +83,8 @@ class ProcessLogger extends Thread {
 		}
 		
 		// If we have a process logger, attempt to determine and log the exit code
-		if (processLogger != null) {
-			logExitValue(process, processLogger);
+		if (loggerForProcess != null) {
+			logExitValue(process, loggerForProcess);
 		}
 	}
 	
@@ -92,15 +92,15 @@ class ProcessLogger extends Thread {
 	 * Attempt to log the exit value of the process to the supplied logger.
 	 * Will block until the process exits.
 	 * @param process The process to log the exit value for. 
-	 * @param processLogger The logger to log to.
+	 * @param loggerForProcess The logger to log to.
 	 */
-	private static void logExitValue(Process process, Logger processLogger) {
-		if (processLogger != null) {
+	private static void logExitValue(Process process, Logger loggerForProcess) {
+		if (loggerForProcess != null) {
 			try {
 				int exitVal = process.waitFor();
-				processLogger.log(Level.FINE, "Process exitValue: " + exitVal);
+				loggerForProcess.log(Level.FINE, "Process exitValue: " + exitVal);
 			} catch (InterruptedException e) {
-				processLogger.log(Level.WARNING,
+				loggerForProcess.log(Level.WARNING,
 						"Problem waiting for completion." + e.toString());
 			}
 		}
