@@ -37,7 +37,7 @@ import org.junit.Test;
 public class ProcessLoggerTest {
 	
 	/**
-	 * run method exhauses input stream with null logger
+	 * run method exhausts input stream
 	 */
 	@Test
 	public void run_ExhaustsInputStreamWithNullLogger() {
@@ -47,7 +47,7 @@ public class ProcessLoggerTest {
 		when(process.getInputStream()).thenReturn(bais);
 		
 		// Setup object under test and run test methods
-		ProcessLogger processLogger = new ProcessLogger(process, null);
+		ProcessLogger processLogger = new ProcessLogger(process);
 		processLogger.run();
 		
 		// Expect that input stream has been exhausted
@@ -55,26 +55,7 @@ public class ProcessLoggerTest {
 	}
 	
 	/**
-	 * run method exhausts input stream with logger
-	 */
-	@Test
-	public void run_ExhaustsInputStreamWithLogger() {
-		// Setup test mocking
-		Logger logger = mock(Logger.class);
-		Process process = mock(Process.class);
-		ByteArrayInputStream bais = new ByteArrayInputStream("a".getBytes());
-		when(process.getInputStream()).thenReturn(bais);
-		
-		// Setup object under test and run test methods
-		ProcessLogger processLogger = new ProcessLogger(process, logger);
-		processLogger.run();
-		
-		// Expect that input stream has been exhausted
-		assertEquals("input stream exhausted", 0, bais.available());
-	}
-	
-	/**
-	 * run method doesn't wait for the process to exit with a null logger
+	 * run method doesn't wait for the process to exit
 	 */
 	@Test
 	public void run_DoesntWaitForProcessExitWithNullLogger() {
@@ -84,7 +65,7 @@ public class ProcessLoggerTest {
 		when(process.getInputStream()).thenReturn(bais);
 		
 		// Setup object under test and run test methods
-		ProcessLogger processLogger = new ProcessLogger(process, null);
+		ProcessLogger processLogger = new ProcessLogger(process);
 		processLogger.run();
 
 		// Expect PL doesn't wait for process to exit
@@ -92,41 +73,25 @@ public class ProcessLoggerTest {
 	}
 	
 	/**
-	 * run method waits for the process to exit with logger
+	 * run method waits for exit code when in Level.FINE
 	 */
 	@Test
-	public void run_WaitsForProcessExitWithLogger() {
+	public void run_WaitsForProcessExitWithNullLogger() {
 		// Setup test mocking
-		Logger logger = mock(Logger.class);
 		Process process = mock(Process.class);
 		ByteArrayInputStream bais = new ByteArrayInputStream("a".getBytes());
 		when(process.getInputStream()).thenReturn(bais);
 		
 		// Setup object under test and run test methods
-		ProcessLogger processLogger = new ProcessLogger(process, logger);
-		processLogger.run();
-		
-		// Expect that PL waits for process to exit
-		try { verify(process, times(1)).waitFor(); } catch (InterruptedException e) {}
-	}
-	
-	/**
-	 * run method logs process output and exit code with logger
-	 */
-	@Test
-	public void run_LogsWithLogger() {
-		// Setup test mocking
-		Logger logger = mock(Logger.class);
-		Process process = mock(Process.class);
-		ByteArrayInputStream bais = new ByteArrayInputStream("a".getBytes());
-		when(process.getInputStream()).thenReturn(bais);
-		
-		// Setup object under test and run test methods
-		ProcessLogger processLogger = new ProcessLogger(process, logger);
+		Logger logger = Logger.getLogger(ProcessLogger.class.getName());
+		logger.setLevel(Level.FINE);
+		ProcessLogger processLogger = new ProcessLogger(process);
 		processLogger.run();
 		
 		// Expect two calls to log; the 'a' and the exit value
-		verify(logger, times(2)).log(any(Level.class), anyString());
+		try {
+			verify(process, times(1)).waitFor();
+		} catch (InterruptedException e) {}
 	}
 	
 }

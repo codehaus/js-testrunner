@@ -269,10 +269,8 @@ public class JSTestExecutionServer implements TestResultProducer {
 		builder.redirectErrorStream(true);
 		process = builder.start();
 
-		// If we're logging at FINE level, log process output and the process exit code
-		// If we're not logging at FINE level, discard the process output
-		Logger processLoggingReference = (logger.isLoggable(Level.FINE) ? logger : null);		
-		processLogger = new ProcessLogger(process, processLoggingReference);
+		// Use a ProcessLogger to print all output to System.out
+		processLogger = new ProcessLogger(process);
 		processLogger.start();
 	}
 
@@ -284,8 +282,9 @@ public class JSTestExecutionServer implements TestResultProducer {
 			process.destroy();
 			
 			// Wait for the process to exit; if it's the last process we want the
-			// ProcessLogger to have a chance to log the exit value
-			if (processLogger.isAlive()) {
+			// ProcessLogger to have a chance to log the exit value, if we are in
+			// FINE level
+			if (logger.isLoggable(Level.FINE) && processLogger.isAlive()) {
 				try {
 					processLogger.join();
 				} catch (InterruptedException e) {

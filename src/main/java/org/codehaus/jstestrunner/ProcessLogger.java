@@ -35,43 +35,31 @@ import java.util.logging.Logger;
 public class ProcessLogger extends Thread {
 	/** The ProcessLogger Logger for internal log statements */
 	private static Logger logger = Logger.getLogger(ProcessLogger.class.getName());
-	/** The logger used to log messages related to the process */
-	private Logger loggerForProcess;
 	/** The process being monitored */
 	private Process process;
 
 	/**
-	 * Construct a ProcessLogger to handle output from a process. If a process logger is
-	 * provided then information is logged to that logger. If it is not provided, then
-	 * output is discarded.
+	 * Construct a ProcessLogger to handle output from a process. 
 	 * @param process The process to handle output for.
-	 * @param loggerForProcess (optional) The logger to log messages to. If null, then the
-	 * input stream will be read and its contents discarded.
 	 */
-	ProcessLogger(Process process, Logger loggerForProcess) {
+	ProcessLogger(Process process) {
 		this.process = process;
-		this.loggerForProcess = loggerForProcess;
 	}
 
 	/**
 	 * Thread.run method which causes the ProcessLogger to read all lines from 
-	 * process.getInputStream() and either log (if a process logger was provided)
-	 * or discard them. If a process logger was provided, it also attempts to 
-	 * determine the process exit code and log that.
+	 * process.getInputStream() and log them.
 	 */
 	public void run() {		
 		InputStreamReader inputStreamReader = new InputStreamReader(process.getInputStream());
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-		StringBuilder outputFromProcess = new StringBuilder();
 		
 		try {
 			String line;
 			// Read every line of input
 			while ((line = bufferedReader.readLine()) != null) {
-				// If we have a process logger, store each line. Otherwise discard.
-				if (loggerForProcess != null) {
-					outputFromProcess.append(line + System.getProperty("line.separator"));
-				}
+				// Print all output to the console
+				System.out.println(line);
 			}			
 			
 		} catch (IOException e) {
@@ -86,28 +74,13 @@ public class ProcessLogger extends Thread {
 			}
 		}
 		
-		// If we have a process logger, log the output and exit code
-		if (loggerForProcess != null) {
-			if (outputFromProcess.length() > 0) {
-				loggerForProcess.log(Level.FINE, outputFromProcess.toString());
-			}
-			logExitValue(process, loggerForProcess);
-		}
-	}
-	
-	/**
-	 * Attempt to log the exit value of the process to the supplied logger.
-	 * Will block until the process exits.
-	 * @param process The process to log the exit value for. 
-	 * @param loggerForProcess The logger to log to.
-	 */
-	private static void logExitValue(Process process, Logger loggerForProcess) {
-		if (loggerForProcess != null) {
+		// If we are logging at FINE level, wait for the exit code
+		if (logger.isLoggable(Level.FINE)) {
 			try {
 				int exitVal = process.waitFor();
-				loggerForProcess.log(Level.FINE, "Process exitValue: " + exitVal);
+				logger.log(Level.FINE, "Process exitValue: " + exitVal);
 			} catch (InterruptedException e) {
-				loggerForProcess.log(Level.WARNING,
+				logger.log(Level.WARNING,
 						"Problem waiting for completion." + e.toString());
 			}
 		}
