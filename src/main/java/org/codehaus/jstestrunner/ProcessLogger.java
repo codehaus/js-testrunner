@@ -62,14 +62,15 @@ public class ProcessLogger extends Thread {
 	public void run() {		
 		InputStreamReader inputStreamReader = new InputStreamReader(process.getInputStream());
 		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+		StringBuilder outputFromProcess = new StringBuilder();
 		
 		try {
 			String line;
 			// Read every line of input
 			while ((line = bufferedReader.readLine()) != null) {
-				// If we have a process logger, log each line. Otherwise discard.
+				// If we have a process logger, store each line. Otherwise discard.
 				if (loggerForProcess != null) {
-					loggerForProcess.log(Level.FINE, line);
+					outputFromProcess.append(line + System.getProperty("line.separator"));
 				}
 			}			
 			
@@ -85,8 +86,11 @@ public class ProcessLogger extends Thread {
 			}
 		}
 		
-		// If we have a process logger, attempt to determine and log the exit code
+		// If we have a process logger, log the output and exit code
 		if (loggerForProcess != null) {
+			if (outputFromProcess.length() > 0) {
+				loggerForProcess.log(Level.FINE, outputFromProcess.toString());
+			}
 			logExitValue(process, loggerForProcess);
 		}
 	}

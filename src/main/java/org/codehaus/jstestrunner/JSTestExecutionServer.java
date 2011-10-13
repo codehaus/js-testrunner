@@ -200,8 +200,8 @@ public class JSTestExecutionServer implements TestResultProducer {
 					testUrls);
 		}
 
-		if (logger.isLoggable(Level.FINE)) {
-			logger.log(Level.FINE,
+		if (logger.isLoggable(Level.FINEST)) {
+			logger.log(Level.FINEST,
 					"Args to use: " + Arrays.toString(formattedArgs));
 		}
 
