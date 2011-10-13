@@ -58,7 +58,12 @@ If you wish to view console output from your tests - which includes QUnit's outp
 
 To configure log output from js-testrunner, you need to create a Java logging configuration file (typically called logging.properties) and configure a surefire property in the project's POM.
 
-h3. Maven Configuration
+h3. Configuration
+
+You need to tell the JVM where the logging configuration file is which specifies the logging output for JS Test runner. You do this by setting the property {{java.util.logging.config.file}} to the path of the logging configuration file.
+
+h4. Maven Configuration
+
 To use a logging.properties file in src/test/resources, configure a surefire property {{java.util.logging.config.file}} like so:
 {code}
 <plugin>
@@ -70,6 +75,13 @@ To use a logging.properties file in src/test/resources, configure a surefire pro
         </systemPropertyVariables>
     </configuration>
 </plugin>
+{code}
+
+h4. Eclipse Configuration
+
+Edit the 'Run Configuration' for JUnit for the project, in the 'Arguments' tab, enter the following in the 'VM Arguments' area:
+{code}
+-Djava.util.logging.config.file=${project_loc}/src/test/resources/logging.properties
 {code}
 
 h3. Logging Configuration
@@ -86,7 +98,7 @@ org.codehaus.jstestrunner.level = FINE
 
 Note that js-testrunner will log all the test output at {{FINE}} level.
 
-h3. Using logging
+h3. Using Logging
 
 An exception from within your test code will cause QUnit to print out the exception and the full test source for the test which threw the exception.
 
