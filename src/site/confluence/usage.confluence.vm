@@ -42,9 +42,7 @@ not need to escape the $ there. For example:
 
 h2. Configuring Maven
 When used with Maven you will need to configure the [Surefire plugin|http://maven.apache.org/plugins/maven-surefire-plugin/] so that it can pass on the value of the
-commandPattern property. Here is a sample Surefire configuration for your POM file; note that the default
-configuration for Surefire is to work on files produced in the target folder. JS Test Runner will look for
-html files in that base folder by default:
+commandPattern property. Here is a sample Surefire configuration for your POM file:
 
 {code}
 <plugin>
