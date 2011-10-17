@@ -40,6 +40,32 @@ not need to escape the $ there. For example:
 -Dorg.codehaus.jstestrunner.commandPattern="/Applications/phantomjs.app/Contents/MacOS/phantomjs '%1$s' %2$s"
 {code}
 
+h2. Configuring Maven
+When used with Maven you will need to configure the [Surefire plugin|http://maven.apache.org/plugins/maven-surefire-plugin/] so that it can pass on the value of the
+commandPattern property. Here is a sample Surefire configuration for your POM file; note that the default
+configuration for Surefire is to work on files produced in the target folder. JS Test Runner will look for
+html files in that base folder by default:
+
+{code}
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-surefire-plugin</artifactId>
+  <version>2.9</version>
+  <configuration>
+    <systemPropertyVariables>
+      <org.codehaus.jstestrunner.commandPattern>${org.codehaus.jstestrunner.commandPattern}</org.codehaus.jstestrunner.commandPattern>
+    </systemPropertyVariables>
+  </configuration>
+  <executions>
+    <execution>
+      <goals>
+        <goal>test</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin>
+{code}
+
 h2. Configuring JS Test Runner
 Configuration is performed using annotations below the @RunWith annotation. Here are the available options:
 
