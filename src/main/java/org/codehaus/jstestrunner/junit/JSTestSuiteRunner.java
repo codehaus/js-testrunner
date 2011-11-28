@@ -237,12 +237,7 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 		String commandPattern = System
 				.getProperty("org.codehaus.jstestrunner.commandPattern");
 		if (commandPattern == null) {
-			throw new InitializationError(
-					"The org.codehaus.jstestrunner.commandPattern property has not be declared."
-							+ " This pattern specifies how the test execution server shall be run."
-							+ " It is of the form: 'path/to/exe %1$s %2$s' where arg "
-							+ "1 = the test runner js that will be run, "
-							+ "2 = the csv form of the urls representing the tests.");
+			commandPattern = "phantomjs '%1$s' %2$s";
 		}
 
 		// Test runner file path.
@@ -266,13 +261,14 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 		jSTestExecutionServer.setCommandPattern(commandPattern);
 		jSTestExecutionServer.setTestRunnerFilePath(testRunnerFilePath);
 		jSTestExecutionServer.setUrls(urls);
-		
+
 		JSTestResultServer jSTestResultServer = new JSTestResultServer();
 		jSTestResultServer.setContextPath(contextPath);
 		jSTestResultServer.setPort(port);
 		jSTestResultServer.setResourceBases(resourceBases);
-		
-		jSTestSuiteRunnerService.setjSTestExecutionServer(jSTestExecutionServer);
+
+		jSTestSuiteRunnerService
+				.setjSTestExecutionServer(jSTestExecutionServer);
 		jSTestSuiteRunnerService.setjSTestResultServer(jSTestResultServer);
 	}
 

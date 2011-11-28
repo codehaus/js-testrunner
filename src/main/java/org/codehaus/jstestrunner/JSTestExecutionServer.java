@@ -267,7 +267,21 @@ public class JSTestExecutionServer implements TestResultProducer {
 		// Get the command args and execute them, merging STDOUT and STDERR
 		ProcessBuilder builder = new ProcessBuilder(getCommandArgs());
 		builder.redirectErrorStream(true);
-		process = builder.start();
+		try {
+			process = builder.start();
+		} catch (IOException e) {
+			throw new IOException(
+			"The phantomjs executable cannot be launched from the path or from the value of"
+					+ " the org.codehaus.jstestrunner.commandPattern property."
+					+ " This pattern specifies how the test execution server shall be run."
+					+ " It is of the form: 'path/to/exe %1$s %2$s' where arg "
+					+ "1 = the test runner js that will be run, "
+					+ "2 = the csv form of the urls representing the tests."
+					+ " If this property is not set then 'phantomjs' will be launched without"
+					+ " a full path and should be present in the running user's PATH environment"
+					+ " variable."
+					+ " Original exception: " + e.toString());
+		}
 
 		// Use a ProcessLogger to print all output to System.out
 		processLogger = new ProcessLogger(process);

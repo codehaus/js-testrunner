@@ -7,7 +7,41 @@ install the PhantomJS binary on all of the machines that will be running JS Test
 
 [http://www.phantomjs.org/]
 
-The next thing you need to do is to tell JS Test Runner what the command line looks like to invoke it. This is
+JS Test Runner needs to be able to locate the phantomjs executable to run. There are two ways to configure this,
+adding the phantomjs executable to the PATH or setting a java property.
+
+h3. Adding PhantomJS to the PATH
+
+If the {{phantomjs}} executable is available on the path, you will be able to run the executable from a command
+line (the command prompt in Windows, terminal is OS X, or a shell in Linux/Unix) and see output like this:
+
+{code}
+bjones@rama3 [10:09] ~$> phantomjs
+
+Usage: phantomjs [options] script.[js|coffee] [script argument [script argument ...]]
+
+Options:
+    --load-images=[yes|no]             Load all inlined images (default is 'yes').
+    --load-plugins=[yes|no]            Load all plugins (i.e. 'Flash', 'Silverlight', ...) (default is 'no').
+    --proxy=address:port               Set the network proxy.
+    --disk-cache=[yes|no]              Enable disk cache (at desktop services cache storage location, default is 'no').
+    --ignore-ssl-errors=[yes|no]       Ignore SSL errors (i.e. expired or self-signed certificate errors).
+{code}
+
+If you see an error instead of the phantomjs options, then phantomjs is not on your path.
+
+To add the phantomjs executable to your path, note the path of the directory which contains the {{phantomjs}}
+executable - i.e., the directory you extracted your download to - and follow the linked instructions appropriate for your platform below (or simply search for
+instructions for your platform - adding to the PATH is a common operating system operation and is not
+specific to JS Test Runner).
+
+* [Windows|http://geekswithblogs.net/renso/archive/2009/10/21/how-to-set-the-windows-path-in-windows-7.aspx]
+* [OS X|http://www.noktec.be/archives/724]
+* [Linux/Unix|http://www.cs.purdue.edu/homes/cs348/unix\_path.html]
+
+h3. Setting the commandPattern property.
+
+The other option is to tell JS Test Runner the command line required to invoke it. This is
 done using a Java property. For example, on Mac OS X (depending on the path to PhantomJS):
 
 ||Property||Value||

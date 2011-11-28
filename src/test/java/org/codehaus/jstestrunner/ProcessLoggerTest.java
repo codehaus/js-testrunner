@@ -55,24 +55,6 @@ public class ProcessLoggerTest {
 	}
 	
 	/**
-	 * run method doesn't wait for the process to exit
-	 */
-	@Test
-	public void run_DoesntWaitForProcessExitWithNullLogger() {
-		// Setup test mocking
-		Process process = mock(Process.class);
-		ByteArrayInputStream bais = new ByteArrayInputStream("a".getBytes());
-		when(process.getInputStream()).thenReturn(bais);
-		
-		// Setup object under test and run test methods
-		ProcessLogger processLogger = new ProcessLogger(process);
-		processLogger.run();
-
-		// Expect PL doesn't wait for process to exit
-		try { verify(process, times(0)).waitFor(); } catch (InterruptedException e) {}
-	}
-	
-	/**
 	 * run method waits for exit code when in Level.FINE
 	 */
 	@Test
@@ -93,5 +75,5 @@ public class ProcessLoggerTest {
 			verify(process, times(1)).waitFor();
 		} catch (InterruptedException e) {}
 	}
-	
+
 }
