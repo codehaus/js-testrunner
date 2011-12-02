@@ -39,12 +39,12 @@
 			<timezone>-5</timezone>
 		</developer>
 		<developer>
-			<id>benjones.selera</id>
 			<name>Ben Jones</name>
 			<roles>
 				<role>Developer</role>
 			</roles>
 			<timezone>10</timezone>
+			<url>http://octopod.org</url>
 		</developer>
 	</developers>
 	
