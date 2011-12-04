@@ -166,9 +166,9 @@
 		<resources>
 			<resource>
 				<directory>src/main/js</directory>
-				<includes>
-					<include>**/*.js</include>
-				</includes>
+				<excludes>
+					<exclude>**/*.js</exclude>
+				</excludes>
 			</resource>
 		</resources>
 
@@ -184,7 +184,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>jslint-maven-plugin</artifactId>
-				<version>1.0.0</version>
+				<version>1.0.1-SNAPSHOT</version>
 				<executions>
 					<execution>
 						<phase>process-resources</phase>
