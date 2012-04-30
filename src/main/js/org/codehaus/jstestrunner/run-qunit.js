@@ -88,8 +88,12 @@ function processTestAndLoadNext(testUrls) {
 							message += testResult.testName + ": failed: " + testResult.failed
 									+ " passed: " + testResult.passed;
 							for (i = 0; i < testResult.details.length; ++i) {
-								message += "\n  " + testResult.details[i].message + ", expected: "
-										+ testResult.details[i].expected;
+								message += "\n  " + testResult.details[i].message;
+								if (testResult.details[i].expected) {
+									message += ", expected: " + testResult.details[i].expected;
+									message += ", actual: " + testResult.details[i].actual;
+									message += ", diff: " + testResult.details[i].diff;
+								}
 							}
 
 							if (j > 0) {
@@ -121,7 +125,13 @@ function processTestAndLoadNext(testUrls) {
 					 * Parse the document for test results.
 					 */
 					function getTestResults() {
-						var details, failed, i, j, nodeList, nodeList2, moduleName, passed, testsElem, testItemElem, testItemElems, testName, testResults;
+						var details, failed, i, j, nodeList, message, moduleName, passed, testsElem, testItemElem, testItemElems, testName, testResults;
+
+						function getFailedTestText(node, className) {
+							return node
+									.getElementsByClassName(className)[0]
+									.getElementsByTagName("pre")[0].innerText;
+						}
 
 						testResults = [];
 
@@ -161,17 +171,24 @@ function processTestAndLoadNext(testUrls) {
 									} else {
 										passed = null;
 									}
-									nodeList = testItemElem.getElementsByClassName("test-message");
-									nodeList2 = testItemElem
-											.getElementsByClassName("test-expected");
+									nodeList = testItemElem.getElementsByTagName("li");
 									details = [];
 									for (j = 0; j < nodeList.length; ++j) {
-										details.push({
-											message : nodeList[j].innerText,
-											expected : nodeList2[j].innerText
-										});
+										message = nodeList[j].getElementsByClassName("test-message")[0].innerText;
+										if (nodeList[j].className === "fail") {
+											details.push({
+												message : message,
+												actual : getFailedTestText(nodeList[j], "test-actual"),
+												diff : getFailedTestText(nodeList[j], "test-diff"),
+												expected : getFailedTestText(nodeList[j], "test-expected")
+											});
+										} else {
+											details.push({
+												message : message
+											});
+										}
 									}
-
+									
 									testResults.push({
 										moduleName : moduleName,
 										testName : testName,
