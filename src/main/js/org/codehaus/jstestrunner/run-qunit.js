@@ -89,17 +89,21 @@ function processTestAndLoadNext(testUrls) {
 									+ " passed: " + testResult.passed;
 							for (i = 0; i < testResult.details.length; ++i) {
 								message += "\n  " + testResult.details[i].message;
-								if (testResult.details[i].expected) {
+								if (testResult.details[i].expected !== undefined) {
 									message += ", expected: " + testResult.details[i].expected;
+								}
+								if (testResult.details[i].actual !== undefined) {
 									message += ", actual: " + testResult.details[i].actual;
+								}
+								if (testResult.details[i].diff !== undefined) {
 									message += ", diff: " + testResult.details[i].diff;
+								}
+								if (testResult.details[i].sourceLine !== undefined) {
+									message += ", source: " + testResult.details[i].sourceLine;
 								}
 							}
 
-							if (j > 0) {
-								messages += "\n";
-							}
-							messages += message;
+							messages += message + "\n";
 
 							passes += testResult.passed;
 							failures += testResult.failed;
@@ -125,12 +129,14 @@ function processTestAndLoadNext(testUrls) {
 					 * Parse the document for test results.
 					 */
 					function getTestResults() {
-						var details, failed, i, j, nodeList, message, moduleName, passed, testsElem, testItemElem, testItemElems, testName, testResults;
+						var details, failed, i, j, nodeList, message, messageElem, moduleName, passed, testsElem, testItemElem, testItemElems, testName, testResults;
 
 						function getFailedTestText(node, className) {
-							return node
-									.getElementsByClassName(className)[0]
-									.getElementsByTagName("pre")[0].innerText;
+							var elem;
+							elem = node.getElementsByClassName(className);
+							return (elem.length > 0? 
+								elem[0].getElementsByTagName("pre")[0].innerText :
+								undefined);
 						}
 
 						testResults = [];
@@ -174,13 +180,19 @@ function processTestAndLoadNext(testUrls) {
 									nodeList = testItemElem.getElementsByTagName("li");
 									details = [];
 									for (j = 0; j < nodeList.length; ++j) {
-										message = nodeList[j].getElementsByClassName("test-message")[0].innerText;
+										messageElem = nodeList[j].getElementsByClassName("test-message");
+										if (messageElem.length > 0) {
+											message = messageElem[0].innerText;
+										} else {
+											message = nodeList[j].innerText;
+										}
 										if (nodeList[j].className === "fail") {
 											details.push({
 												message : message,
 												actual : getFailedTestText(nodeList[j], "test-actual"),
 												diff : getFailedTestText(nodeList[j], "test-diff"),
-												expected : getFailedTestText(nodeList[j], "test-expected")
+												expected : getFailedTestText(nodeList[j], "test-expected"),
+												sourceLine : getFailedTestText(nodeList[j], "test-source")
 											});
 										} else {
 											details.push({
