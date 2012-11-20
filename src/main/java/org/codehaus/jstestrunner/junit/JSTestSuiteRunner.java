@@ -340,22 +340,24 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 	protected void runChild(URL url, RunNotifier notifier) {
 		Description description = describeChild(url);
 		notifier.fireTestStarted(description);
-
-		JSTestResult jsTestResult = jSTestSuiteRunnerService.runTest(url);
-		if (jsTestResult != null) {
-			if (jsTestResult.failures > 0) {
-				JSTestFailure failure = new JSTestFailure(description, url,
-						"Failures: " + jsTestResult.failures + ", passes: "
-								+ jsTestResult.passes + ":\n"
-								+ jsTestResult.message);
-				notifier.fireTestFailure(failure);
+		try {
+			JSTestResult jsTestResult = jSTestSuiteRunnerService.runTest(url);
+			if (jsTestResult != null) {
+				if (jsTestResult.failures > 0) {
+					JSTestFailure failure = new JSTestFailure(description, url,
+							"Failures: " + jsTestResult.failures + ", passes: "
+									+ jsTestResult.passes + ":\n"
+									+ jsTestResult.message);
+					notifier.fireTestFailure(failure);
+				}
 			} else {
-				notifier.fireTestFinished(description);
+				JSTestFailure failure = new JSTestFailure(description, url,
+						"Timed out waiting for test");
+				notifier.fireTestFailure(failure);
 			}
-		} else {
-			JSTestFailure failure = new JSTestFailure(description, url,
-					"Timed out waiting for test");
-			notifier.fireTestFailure(failure);
+		} finally {
+			notifier.fireTestFinished(description);
+
 		}
 
 	}
