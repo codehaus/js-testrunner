@@ -21,43 +21,49 @@ package org.codehaus.jstestrunner.jetty;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.codehaus.jstestrunner.TestResultProducer;
 import org.codehaus.jstestrunner.jetty.JSTestResultHandler.JSTestResult;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
 
 /**
  * A server responsible for obtaining results from an execution.
  */
-public class JSTestResultServer extends Object {
+public class JSTestResultServer {
 
-	/**
-	 * The Jetty server instance.
-	 */
-	private Server webServer;
+	private final Server webServer;
 
-	/**
-	 * The handler of test results (POST requests).
-	 */
-	private JSTestResultHandler jsTestResultHandler;
+    private final JSTestResultHandler jsTestResultHandler;
 
-	private Integer port;
+	private final Integer port;
 
-	private String contextPath;
+	private final String contextPath;
 
-	private String[] resourceBases;
+    private final String[] resourceBases;
 
-	/**
+    /**
+     * @param webServer The Jetty server instance
+     * @param jsTestResultHandler The handler of test results (POST requests)
+     */
+    public JSTestResultServer(final Server webServer, final JSTestResultHandler jsTestResultHandler,
+                              final Integer port, final String contextPath, final String[] resourceBases) {
+        this.webServer = webServer;
+        this.jsTestResultHandler = jsTestResultHandler;
+        this.port = port;
+        this.contextPath = contextPath;
+        this.resourceBases = resourceBases;
+    }
+
+    /**
 	 * Set when the web server has been initialised.
 	 */
-	private boolean initedWebServer = false;
+	private final AtomicBoolean initedWebServer = new AtomicBoolean(false);
 
 	/**
 	 * Get a result for a given URL.
@@ -69,8 +75,8 @@ public class JSTestResultServer extends Object {
 	 *            results.
 	 * @return the test result or null if one cannot be obtained.
 	 */
-	public JSTestResult getJsTestResult(URL url,
-			TestResultProducer testResultProducer) {
+	public JSTestResult getJsTestResult(final URL url,
+			final TestResultProducer testResultProducer) {
 		return jsTestResultHandler.getJsTestResult(url, testResultProducer, 30,
 				TimeUnit.SECONDS);
 	}
@@ -80,20 +86,17 @@ public class JSTestResultServer extends Object {
 	 */
 	private void initWebServer() {
 
-		webServer = new Server();
-
-		SelectChannelConnector connector = new SelectChannelConnector();
+		final ServerConnector connector = new ServerConnector(webServer);
 		connector.setPort(port);
 		webServer.addConnector(connector);
 
-		Handler[] handlers = new Handler[resourceBases.length + 1];
+		final Handler[] handlers = new Handler[resourceBases.length + 1];
 		int i = 0;
 		for (String resourceBase : resourceBases) {
-			ResourceHandler resourceHandler = new ResourceHandler();
+			final ResourceHandler resourceHandler = new ResourceHandler();
 			resourceHandler.setResourceBase(resourceBase);
 			handlers[i++] = resourceHandler;
 		}
-		jsTestResultHandler = new JSTestResultHandler();
 		handlers[i] = jsTestResultHandler;
 
 		HandlerList handlerList = new HandlerList();
@@ -107,21 +110,6 @@ public class JSTestResultServer extends Object {
 
 	}
 
-	@Resource
-	public void setContextPath(String contextPath) {
-		this.contextPath = contextPath;
-	}
-
-	@Resource
-	public void setPort(Integer port) {
-		this.port = port;
-	}
-
-	@Resource
-	public void setResourceBases(String[] resourceBases) {
-		this.resourceBases = resourceBases;
-	}
-
 	/**
 	 * Start the server.
 	 * 
@@ -129,9 +117,8 @@ public class JSTestResultServer extends Object {
 	 *             if something goes wrong.
 	 */
 	public void start() throws Exception {
-		if (!initedWebServer) {
+		if (!initedWebServer.getAndSet(true)) {
 			initWebServer();
-			initedWebServer = true;
 		}
 		webServer.start();
 	}
@@ -143,9 +130,29 @@ public class JSTestResultServer extends Object {
 	 *             if something goes wrong.
 	 */
 	public void stop() throws Exception {
-		if (initedWebServer) {
+		if (initedWebServer.get()) {
 			webServer.stop();
 		}
 	}
+
+    public Server getWebServer() {
+        return webServer;
+    }
+
+    public JSTestResultHandler getJsTestResultHandler() {
+        return jsTestResultHandler;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public String[] getResourceBases() {
+        return resourceBases;
+    }
 
 }

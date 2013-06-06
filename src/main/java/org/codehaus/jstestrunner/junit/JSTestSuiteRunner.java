@@ -32,8 +32,10 @@ import java.util.logging.Logger;
 
 import org.codehaus.jstestrunner.JSTestExecutionServer;
 import org.codehaus.jstestrunner.JSTestSuiteRunnerService;
+import org.codehaus.jstestrunner.jetty.JSTestResultHandler;
 import org.codehaus.jstestrunner.jetty.JSTestResultHandler.JSTestResult;
 import org.codehaus.jstestrunner.jetty.JSTestResultServer;
+import org.eclipse.jetty.server.Server;
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
@@ -115,7 +117,7 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 	private static class JSTestFailure extends Failure {
 		private final URL url;
 
-		public JSTestFailure(Description description, URL url, String message) {
+		public JSTestFailure(final Description description, final URL url, final String message) {
 			super(description, new RuntimeException(message));
 			this.url = url;
 		}
@@ -166,16 +168,16 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 	private final JSTestSuiteRunnerService jSTestSuiteRunnerService;
 	private final List<URL> urls;
 
-	public JSTestSuiteRunner(Class<?> testClass) throws InitializationError {
+	public JSTestSuiteRunner(final Class<?> testClass) throws InitializationError {
 		super(testClass);
 
 		// We don't care to see what these packages are up to unless there's
 		// some complaining to be done.
-		Logger logger = Logger.getLogger("org.eclipse.jetty");
+		final Logger logger = Logger.getLogger("org.eclipse.jetty");
 		logger.setLevel(Level.WARNING);
 
 		// Set up our host.
-		Host hostAnnotation = testClass.getAnnotation(Host.class);
+		final Host hostAnnotation = testClass.getAnnotation(Host.class);
 		String host;
 		int port;
 		if (hostAnnotation == null) {
@@ -183,7 +185,7 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 			port = 9080;
 
 		} else {
-			String[] hostParts = hostAnnotation.value().split(":");
+			final String[] hostParts = hostAnnotation.value().split(":");
 			if (hostParts.length != 2) {
 				throw new InitializationError(
 						"Host must be of the form host:port");
@@ -194,7 +196,7 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 		}
 
 		// Set up our context path.
-		ContextPath contextPathAnnotation = testClass
+		final ContextPath contextPathAnnotation = testClass
 				.getAnnotation(ContextPath.class);
 		String contextPath;
 		if (contextPathAnnotation == null) {
@@ -204,7 +206,7 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 		}
 
 		// Set up our resource bases.
-		ResourceBase resourceBaseAnnotation = testClass
+		final ResourceBase resourceBaseAnnotation = testClass
 				.getAnnotation(ResourceBase.class);
 		String[] resourceBases;
 		if (resourceBaseAnnotation == null) {
@@ -216,7 +218,7 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 		}
 
 		// Inclusion patterns
-		Include includeAnnotation = testClass.getAnnotation(Include.class);
+		final Include includeAnnotation = testClass.getAnnotation(Include.class);
 		String[] includes;
 		if (includeAnnotation == null) {
 			includes = new String[] { "**/*Test.html", "**/*Test.htm" };
@@ -225,7 +227,7 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 		}
 
 		// Inclusion patterns
-		Exclude excludeAnnotation = testClass.getAnnotation(Exclude.class);
+		final Exclude excludeAnnotation = testClass.getAnnotation(Exclude.class);
 		String[] excludes;
 		if (excludeAnnotation == null) {
 			excludes = new String[0];
@@ -241,7 +243,7 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 		}
 
 		// Test runner file path.
-		TestRunnerFilePath testRunnerFilePathAnnotation = testClass
+		final TestRunnerFilePath testRunnerFilePathAnnotation = testClass
 				.getAnnotation(TestRunnerFilePath.class);
 		String testRunnerFilePath;
 		if (testRunnerFilePathAnnotation == null) {
@@ -256,20 +258,14 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 		urls = JSTestSuiteRunnerService.scanTestFiles(host, port,
 				resourceBases, includes, excludes);
 
-		jSTestSuiteRunnerService = new JSTestSuiteRunnerService();
-		JSTestExecutionServer jSTestExecutionServer = new JSTestExecutionServer();
-		jSTestExecutionServer.setCommandPattern(commandPattern);
-		jSTestExecutionServer.setTestRunnerFilePath(testRunnerFilePath);
-		jSTestExecutionServer.setUrls(urls);
+        final JSTestResultServer jSTestResultServer = new JSTestResultServer(new Server(), new JSTestResultHandler(),
+                port, contextPath, resourceBases);
 
-		JSTestResultServer jSTestResultServer = new JSTestResultServer();
-		jSTestResultServer.setContextPath(contextPath);
-		jSTestResultServer.setPort(port);
-		jSTestResultServer.setResourceBases(resourceBases);
+		final JSTestExecutionServer jSTestExecutionServer = new JSTestExecutionServer(testRunnerFilePath,
+                commandPattern, urls);
 
-		jSTestSuiteRunnerService
-				.setjSTestExecutionServer(jSTestExecutionServer);
-		jSTestSuiteRunnerService.setjSTestResultServer(jSTestResultServer);
+        jSTestSuiteRunnerService = new JSTestSuiteRunnerService(jSTestResultServer, jSTestExecutionServer);
+
 	}
 
 	/**
@@ -314,14 +310,14 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 
 	@Override
 	protected Statement classBlock(final RunNotifier notifier) {
-		Statement statement = super.classBlock(notifier);
-		statement = beforeTests(statement);
-		statement = afterTests(statement);
-		return statement;
+		final Statement statement1 = super.classBlock(notifier);
+        final Statement statement2 = beforeTests(statement1);
+        final Statement statement3 = afterTests(statement2);
+		return statement3;
 	}
 
 	@Override
-	protected Description describeChild(URL url) {
+	protected Description describeChild(final URL url) {
 		return Description
 				.createTestDescription(this.getTestClass().getJavaClass(),
 						JSTestSuiteRunnerService.getFormattedPath(url));
@@ -337,21 +333,21 @@ public class JSTestSuiteRunner extends ParentRunner<URL> {
 	}
 
 	@Override
-	protected void runChild(URL url, RunNotifier notifier) {
-		Description description = describeChild(url);
+	protected void runChild(final URL url, final RunNotifier notifier) {
+		final Description description = describeChild(url);
 		notifier.fireTestStarted(description);
 		try {
-			JSTestResult jsTestResult = jSTestSuiteRunnerService.runTest(url);
+			final JSTestResult jsTestResult = jSTestSuiteRunnerService.runTest(url);
 			if (jsTestResult != null) {
-				if (jsTestResult.failures > 0) {
-					JSTestFailure failure = new JSTestFailure(description, url,
-							"Failures: " + jsTestResult.failures + ", passes: "
-									+ jsTestResult.passes + ":\n"
-									+ jsTestResult.message);
+				if (jsTestResult.getFailures() > 0) {
+					final JSTestFailure failure = new JSTestFailure(description, url,
+							"Failures: " + jsTestResult.getFailures() + ", passes: "
+									+ jsTestResult.getPasses() + ":\n"
+									+ jsTestResult.getMessage());
 					notifier.fireTestFailure(failure);
 				}
 			} else {
-				JSTestFailure failure = new JSTestFailure(description, url,
+				final JSTestFailure failure = new JSTestFailure(description, url,
 						"Timed out waiting for test");
 				notifier.fireTestFailure(failure);
 			}

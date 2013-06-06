@@ -48,10 +48,28 @@ public class JSTestResultHandler extends AbstractHandler {
 	 * Captures a test result.
 	 */
 	public static class JSTestResult {
-		public int failures;
-		public int passes;
-		public String message;
-	}
+		private final int failures;
+        private final int passes;
+        private final String message;
+
+        public JSTestResult(final int failures, final int passes, final String message) {
+            this.failures = failures;
+            this.passes = passes;
+            this.message = message;
+        }
+
+        public int getFailures() {
+            return failures;
+        }
+
+        public int getPasses() {
+            return passes;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
 
 	/**
 	 * Store a mapping of test results.
@@ -75,8 +93,8 @@ public class JSTestResultHandler extends AbstractHandler {
 	 *            the unit of time to wait.
 	 * @return the test result or null if it cannot be obtained.
 	 */
-	public JSTestResult getJsTestResult(URL url,
-			TestResultProducer testResultProducer, long time, TimeUnit unit) {
+	public JSTestResult getJsTestResult(final URL url,
+			final TestResultProducer testResultProducer, final long time, final TimeUnit unit) {
 		JSTestResult jsTestResult = null;
 		jsTestResultsLock.lock();
 		try {
@@ -85,12 +103,8 @@ public class JSTestResultHandler extends AbstractHandler {
 				if (jsTestResult == null) {
 					boolean newJsTestResult;
 					try {
-						if (testResultProducer.isAvailable()) {
-							newJsTestResult = newJsTestResults
-									.await(time, unit);
-						} else {
-							newJsTestResult = false;
-						}
+                        newJsTestResult = (testResultProducer.isAvailable() &&
+                                newJsTestResults.await(time, unit));
 					} catch (InterruptedException e) {
 						newJsTestResult = false;
 					}
@@ -108,16 +122,16 @@ public class JSTestResultHandler extends AbstractHandler {
 	/**
 	 * Handle a test result.
 	 */
-	public void handle(String target, Request baseRequest,
-			HttpServletRequest request, HttpServletResponse response)
+	public void handle(final String target, final Request baseRequest,
+			final HttpServletRequest request, final HttpServletResponse response)
 			throws IOException, ServletException {
 		if (target.equals("/testResults") && request.getMethod().equals("POST")
 				&& request.getContentType().contains("application/json")) {
 
 			JSTestResult jsTestResult = null;
 
-			JsonFactory f = new JsonFactory();
-			JsonParser jp = f.createJsonParser(request.getReader());
+			final JsonFactory f = new JsonFactory();
+			final JsonParser jp = f.createJsonParser(request.getReader());
 
 			String testUrl = null;
 			Integer failures = null;
@@ -127,7 +141,7 @@ public class JSTestResultHandler extends AbstractHandler {
 			try {
 				jp.nextToken(); // will return JsonToken.START_OBJECT (verify?)
 				while (jp.nextToken() != JsonToken.END_OBJECT) {
-					String fieldname = jp.getCurrentName();
+					final String fieldname = jp.getCurrentName();
 					jp.nextToken(); // move to value, or
 									// START_OBJECT/START_ARRAY
 					if (fieldname.equals("testUrl")) { // contains an object
@@ -148,10 +162,7 @@ public class JSTestResultHandler extends AbstractHandler {
 			if (testUrl != null && failures != null && passes != null
 					&& message != null) {
 
-				jsTestResult = new JSTestResult();
-				jsTestResult.failures = failures;
-				jsTestResult.message = message;
-				jsTestResult.passes = passes;
+				jsTestResult = new JSTestResult(failures, passes, message);
 
 				response.setStatus(HttpServletResponse.SC_NO_CONTENT);
 

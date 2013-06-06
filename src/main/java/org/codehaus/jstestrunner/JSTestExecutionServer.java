@@ -30,52 +30,52 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.annotation.Resource;
 
 /**
  * An execution server executes JavaScript tests represented by a list of urls.
  */
 public class JSTestExecutionServer implements TestResultProducer {
 
-	private static Logger logger = Logger.getLogger(JSTestExecutionServer.class
+    static final String TEST_RUNNER_FILENAME = "run-qunit.js";
+    static final String TEST_RUNNER_RES_PATH = "/org/codehaus/jstestrunner/";
+
+    private static Logger LOGGER = Logger.getLogger(JSTestExecutionServer.class
 			.getName());
 
-	/**
-	 * Copy the test runner we have to the test folder and make it available to
-	 * multiple invocations of the runner.
-	 */
-	private File testRunnerFile;
-	private final Lock testRunnerFileLock = new ReentrantLock();
+	private final String testRunnerFilePath;
 
-	/**
-	 * The location of the test runner file that the execution will use.
-	 */
-	private String testRunnerFilePath;
+	private final String commandPattern;
 
-	/**
-	 * The formatted command to perform.
-	 */
-	private String commandPattern;
+    private final List<URL> urls;
 
-	/**
+    // Copy the test runner we have to the test folder and make it available to
+    // multiple invocations of the runner.
+    private final File testRunnerFile;
+
+    /**
+     * @param testRunnerFilePath The location of the test runner file that the execution will use
+     * @param commandPattern The formatted command to perform
+     * @param urls The urls relating to the test
+     */
+    public JSTestExecutionServer(final String testRunnerFilePath, final String commandPattern,
+                                 final List<URL> urls) {
+        this.testRunnerFilePath = testRunnerFilePath;
+        this.commandPattern = commandPattern;
+        this.urls = urls;
+        testRunnerFile = new File(testRunnerFilePath, TEST_RUNNER_FILENAME);
+    }
+
+    /**
 	 * The process that was started.
 	 */
 	private Process process;
 
 	/**
-	 * The urls relating to the test.
+	 * The LOGGER attached to the process being run.
 	 */
-	private List<URL> urls;
-	
-	/**
-	 * The logger attached to the process being run.
-	 */
-	private ProcessLogger processLogger;
+	private Thread processLoggerThread;
 
 	/**
 	 * Make a copy of the js file that will drive the execution engine. Copies
@@ -85,47 +85,35 @@ public class JSTestExecutionServer implements TestResultProducer {
 	 * @throws IOException
 	 *             if there is a problem copying the file.
 	 */
-	protected void copyTestRunnerFileIfNotExists() throws IOException {
+	protected synchronized void copyTestRunnerFileIfNotExists() throws IOException {
+        if (!testRunnerFile.exists()) {
+            // Create any intermediate folders and create the file.
+            new File(testRunnerFilePath).mkdirs();
+            testRunnerFile.createNewFile();
 
-		assert testRunnerFilePath != null;
+            // Provide an absolute path to the script that actually runs the
+            // test on the test executor.
+            final InputStream is = JSTestExecutionServer.class
+                    .getResourceAsStream(TEST_RUNNER_RES_PATH + TEST_RUNNER_FILENAME);
 
-		String testRunnerFilename = "run-qunit.js";
+            final BufferedInputStream bis = new BufferedInputStream(is);
+            try {
+                final BufferedOutputStream bos = new BufferedOutputStream(
+                        new FileOutputStream(testRunnerFile));
+                try {
+                    int c;
+                    while ((c = bis.read()) != -1) {
+                        bos.write(c);
+                    }
+                } finally {
+                    bos.close();
+                }
+            } finally {
+                bis.close();
+            }
+        }
+    }
 
-		testRunnerFileLock.lock();
-		try {
-			testRunnerFile = new File(testRunnerFilePath, testRunnerFilename);
-			if (!testRunnerFile.exists()) {
-				// Create any intermediate folders and create the file.
-				new File(testRunnerFilePath).mkdirs();
-				testRunnerFile.createNewFile();
-
-				// Provide an absolute path to the script that actually runs the
-				// test on the test executor.
-				InputStream is = JSTestExecutionServer.class
-						.getResourceAsStream("/org/codehaus/jstestrunner/"
-								+ testRunnerFilename);
-				assert is != null;
-
-				BufferedInputStream bis = new BufferedInputStream(is);
-				try {
-					BufferedOutputStream bos = new BufferedOutputStream(
-							new FileOutputStream(testRunnerFile));
-					try {
-						int c;
-						while ((c = bis.read()) != -1) {
-							bos.write(c);
-						}
-					} finally {
-						bos.close();
-					}
-				} finally {
-					bis.close();
-				}
-			}
-		} finally {
-			testRunnerFileLock.unlock();
-		}
-	}
 
 	/**
 	 * Get the command string to use.
@@ -137,13 +125,11 @@ public class JSTestExecutionServer implements TestResultProducer {
 	 */
 	protected String[] getCommandArgs() throws IOException {
 
-		assert commandPattern != null && testRunnerFile != null && urls != null;
-
 		// Parse the command pattern and break it out into a list of args taking
 		// into consideration anything within double quote chars.
 
-		List<String> args = new ArrayList<String>();
-		StringReader s = new StringReader(commandPattern);
+		final List<String> args = new ArrayList<String>();
+		final StringReader s = new StringReader(commandPattern);
 		int c;
 		StringBuilder sb = new StringBuilder();
 		boolean inDoubleQuotes = false;
@@ -180,28 +166,28 @@ public class JSTestExecutionServer implements TestResultProducer {
 		}
 
 		// Put the test runner file into a format for formatting.
-		String testRunnerAbsoluteFilePath = testRunnerFile.getAbsolutePath();
+		final String testRunnerAbsoluteFilePath = testRunnerFile.getAbsolutePath();
 
 		// Convert the list of urls to a command line representation (csv).
 		sb = new StringBuilder();
-		for (URL url : urls) {
+		for (final URL url : urls) {
 			if (sb.length() > 0) {
 				sb.append(',');
 			}
 			sb.append(url.toString());
 		}
-		String testUrls = sb.toString();
+		final String testUrls = sb.toString();
 
 		// Format each argument.
-		String[] formattedArgs = new String[args.size()];
+		final String[] formattedArgs = new String[args.size()];
 		int i = 0;
-		for (String arg : args) {
+		for (final String arg : args) {
 			formattedArgs[i++] = String.format(arg, testRunnerAbsoluteFilePath,
 					testUrls);
 		}
 
-		if (logger.isLoggable(Level.FINEST)) {
-			logger.log(Level.FINEST,
+		if (LOGGER.isLoggable(Level.FINEST)) {
+			LOGGER.log(Level.FINEST,
 					"Args to use: " + Arrays.toString(formattedArgs));
 		}
 
@@ -230,27 +216,12 @@ public class JSTestExecutionServer implements TestResultProducer {
 			try {
 				process.exitValue();
 				return false;
-			} catch (IllegalThreadStateException e) {
+			} catch (final IllegalThreadStateException e) {
 				return true;
 			}
 		} else {
 			return false;
 		}
-	}
-
-	@Resource
-	public void setCommandPattern(String commandPattern) {
-		this.commandPattern = commandPattern;
-	}
-
-	@Resource
-	public void setTestRunnerFilePath(String testRunnerFilePath) {
-		this.testRunnerFilePath = testRunnerFilePath;
-	}
-
-	@Resource
-	public void setUrls(List<URL> urls) {
-		this.urls = urls;
 	}
 
 	/**
@@ -265,7 +236,7 @@ public class JSTestExecutionServer implements TestResultProducer {
 		copyTestRunnerFileIfNotExists();
 		
 		// Get the command args and execute them, merging STDOUT and STDERR
-		ProcessBuilder builder = new ProcessBuilder(getCommandArgs());
+		final ProcessBuilder builder = new ProcessBuilder(getCommandArgs());
 		builder.redirectErrorStream(true);
 		try {
 			process = builder.start();
@@ -278,8 +249,8 @@ public class JSTestExecutionServer implements TestResultProducer {
 		}
 
 		// Use a ProcessLogger to print all output to System.out
-		processLogger = new ProcessLogger(process);
-		processLogger.start();
+		processLoggerThread = new Thread(new ProcessLogger(process));
+		processLoggerThread.start();
 	}
 
 	/**
@@ -292,11 +263,11 @@ public class JSTestExecutionServer implements TestResultProducer {
 			// Wait for the process to exit; if it's the last process we want the
 			// ProcessLogger to have a chance to log the exit value, if we are in
 			// FINE level
-			if (logger.isLoggable(Level.FINE) && processLogger.isAlive()) {
+			if (LOGGER.isLoggable(Level.FINE) && processLoggerThread.isAlive()) {
 				try {
-					processLogger.join();
+					processLoggerThread.join();
 				} catch (InterruptedException e) {
-					logger.log(Level.WARNING, "Exception waiting for process logger to exit: " + e.toString());
+					LOGGER.log(Level.WARNING, "Exception waiting for process logger to exit: " + e.toString());
 				}
 			}
 		}

@@ -165,9 +165,9 @@ public class JSTestResultHandlerTest {
 		// Now verify that the test result is what we're expecting.
 		JSTestResult result = handler.getJsTestResult(new URL("http:/a.html"),
 				testResultProducer, 30L, TimeUnit.SECONDS);
-		assertEquals(0, result.failures);
-		assertEquals("some message", result.message);
-		assertEquals(1, result.passes);
+		assertEquals(0, result.getFailures());
+		assertEquals("some message", result.getMessage());
+		assertEquals(1, result.getPasses());
 	}
 
 	/**

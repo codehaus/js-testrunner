@@ -33,20 +33,17 @@ import org.junit.Test;
 
 public class JSTestExecutionServerTest {
 
-	private JSTestExecutionServer server;
-
 	/**
 	 * Perform the minimum setup.
 	 * 
 	 * @throws IOException
 	 *             if something goes wrong.
 	 */
-	@Before
-	public void setup() throws IOException {
-		server = new JSTestExecutionServer();
-		server.setTestRunnerFilePath("target" + File.separator
-				+ "js-testrunner");
+	private JSTestExecutionServer setupServer(final String args) throws IOException {
+        final JSTestExecutionServer server = new JSTestExecutionServer("target" + File.separator + "js-testrunner",
+                args, new ArrayList<URL>());
 		server.copyTestRunnerFileIfNotExists();
+        return server;
 	}
 
 	/**
@@ -57,11 +54,10 @@ public class JSTestExecutionServerTest {
 	 */
 	@Test
 	public void testGetCommandArgsWithDblQuotes() throws IOException {
-		server.setCommandPattern("/Applications/phantomjs.app/Contents/MacOS/phantomjs \"%1$s'\" %2$s");
-		List<URL> urls = new ArrayList<URL>();
+        final JSTestExecutionServer server = setupServer("/Applications/phantomjs.app/Contents/MacOS/phantomjs \"%1$s'\" %2$s");
+		List<URL> urls = server.getUrls();
 		urls.add(new URL("http:/a.html"));
 		urls.add(new URL("http:/b.html"));
-		server.setUrls(urls);
 		String[] args = server.getCommandArgs();
 		assertEquals(3, args.length);
 		assertEquals("/Applications/phantomjs.app/Contents/MacOS/phantomjs",
@@ -79,9 +75,7 @@ public class JSTestExecutionServerTest {
 	 */
 	@Test
 	public void testGetCommandArgsWithSingleQuotes() throws IOException {
-		server.setCommandPattern("/Applications/phantomjs.app/Contents/MacOS/phantomjs '%1$s\"' %2$s");
-		List<URL> urls = new ArrayList<URL>();
-		server.setUrls(urls);
+        final JSTestExecutionServer server = setupServer("/Applications/phantomjs.app/Contents/MacOS/phantomjs '%1$s\"' %2$s");
 		String[] args = server.getCommandArgs();
 		assertEquals(3, args.length);
 		assertTrue(args[1].endsWith(server.getTestRunnerFilePath()

@@ -25,8 +25,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import javax.inject.Inject;
+import java.util.logging.Logger;
 
 import org.codehaus.jstestrunner.jetty.JSTestResultHandler.JSTestResult;
 import org.codehaus.jstestrunner.jetty.JSTestResultServer;
@@ -41,20 +40,26 @@ import org.codehaus.plexus.util.DirectoryScanner;
  */
 public class JSTestSuiteRunnerService {
 
-	/**
+    private static final Logger LOGGER = Logger.getLogger(JSTestSuiteRunnerService.class
+            .getName());
+
+    /**
 	 * Tidy up the path for output.
 	 * 
 	 * @param url
 	 *            the url to tidy.
 	 * @return the tidied string representation for output.
 	 */
-	public static String getFormattedPath(URL url) {
-		String urlPath = url.getPath();
+	public static String getFormattedPath(final URL url) {
+		final String urlPath = url.getPath();
+        String strippedUrlPath;
 		if (urlPath.length() > 0 && urlPath.charAt(0) == '/') {
 			// Looks better without the leading '/'.
-			urlPath = urlPath.substring(1);
-		}
-		return urlPath;
+            strippedUrlPath = urlPath.substring(1);
+		} else {
+            strippedUrlPath = urlPath;
+        }
+		return strippedUrlPath;
 	}
 
 	/**
@@ -64,16 +69,16 @@ public class JSTestSuiteRunnerService {
 	 *            the relative file paths.
 	 * @return a collection of relative urls.
 	 */
-	private static Collection<URL> relativeFilepathsAsUrls(String host,
-			int port, String[] includedFiles) {
-		Collection<URL> relativeUrls = new ArrayList<URL>(includedFiles.length);
-		for (String includedFile : includedFiles) {
+	private static Collection<URL> relativeFilepathsAsUrls(final String host,
+			final int port, final String[] includedFiles) {
+		final Collection<URL> relativeUrls = new ArrayList<URL>(includedFiles.length);
+		for (final String includedFile : includedFiles) {
 			try {
 				relativeUrls.add(new URL("http", host, port, "/"
 						+ includedFile.replace(File.separatorChar, '/')));
 			} catch (MalformedURLException e) {
-				System.out.println(e);
-			}
+                LOGGER.severe("Problem determining relative urls: " + e.getMessage());
+            }
 		}
 		return relativeUrls;
 	}
@@ -84,13 +89,13 @@ public class JSTestSuiteRunnerService {
 	 * 
 	 * @return the list of urls
 	 */
-	public static List<URL> scanTestFiles(String host, int port,
-			String[] resourceBases, String[] includes, String[] excludes) {
-		List<URL> includedUrls = new ArrayList<URL>();
-		DirectoryScanner scanner = new DirectoryScanner();
+	public static List<URL> scanTestFiles(final String host, final int port,
+			final String[] resourceBases, final String[] includes, final String[] excludes) {
+		final List<URL> includedUrls = new ArrayList<URL>();
+		final DirectoryScanner scanner = new DirectoryScanner();
 		scanner.setIncludes(includes);
 		scanner.setExcludes(excludes);
-		for (String resourceBase : resourceBases) {
+		for (final String resourceBase : resourceBases) {
 			scanner.setBasedir(resourceBase);
 			scanner.scan();
 			includedUrls.addAll(relativeFilepathsAsUrls(host, port,
@@ -99,9 +104,15 @@ public class JSTestSuiteRunnerService {
 		return includedUrls;
 	}
 
-	private JSTestResultServer jSTestResultServer;
+	private final JSTestResultServer jSTestResultServer;
 
-	private JSTestExecutionServer jSTestExecutionServer;
+	private final JSTestExecutionServer jSTestExecutionServer;
+
+    public JSTestSuiteRunnerService(
+            final JSTestResultServer jSTestResultServer, final JSTestExecutionServer jSTestExecutionServer) {
+        this.jSTestResultServer = jSTestResultServer;
+        this.jSTestExecutionServer = jSTestExecutionServer;
+    }
 
 	/**
 	 * Clean up our test environment.
@@ -149,19 +160,7 @@ public class JSTestSuiteRunnerService {
 	 *            the url representing the test.
 	 * @return the test result.
 	 */
-	public JSTestResult runTest(URL url) {
+	public JSTestResult runTest(final URL url) {
 		return jSTestResultServer.getJsTestResult(url, jSTestExecutionServer);
 	}
-
-	@Inject
-	public void setjSTestExecutionServer(
-			JSTestExecutionServer jSTestExecutionServer) {
-		this.jSTestExecutionServer = jSTestExecutionServer;
-	}
-
-	@Inject
-	public void setjSTestResultServer(JSTestResultServer jSTestResultServer) {
-		this.jSTestResultServer = jSTestResultServer;
-	}
-
 }

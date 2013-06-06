@@ -27,22 +27,23 @@ import java.util.logging.Logger;
 
 /**
  * ProcessLogger; handles output from a process and either discards it or
- * logs it to the supplied logger. This is used to interact with the test runner
+ * logs it to the supplied LOGGER. This is used to interact with the test runner
  * processes.
  * 
  * @author Ben Jones
  */
-public class ProcessLogger extends Thread {
-	/** The ProcessLogger Logger for internal log statements */
-	private static Logger logger = Logger.getLogger(ProcessLogger.class.getName());
-	/** The process being monitored */
-	private Process process;
+public class ProcessLogger implements Runnable {
+
+	private static Logger LOGGER = Logger.getLogger(ProcessLogger.class.getName());
+
+	// The process being monitored
+	private final Process process;
 
 	/**
 	 * Construct a ProcessLogger to handle output from a process. 
 	 * @param process The process to handle output for.
 	 */
-	ProcessLogger(Process process) {
+	ProcessLogger(final Process process) {
 		this.process = process;
 	}
 
@@ -50,9 +51,9 @@ public class ProcessLogger extends Thread {
 	 * Thread.run method which causes the ProcessLogger to read all lines from 
 	 * process.getInputStream() and log them.
 	 */
-	public void run() {		
-		InputStreamReader inputStreamReader = new InputStreamReader(process.getInputStream());
-		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+	public void run() {
+		final InputStreamReader inputStreamReader = new InputStreamReader(process.getInputStream());
+        final BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 		
 		try {
 			String line;
@@ -63,24 +64,23 @@ public class ProcessLogger extends Thread {
 			}			
 			
 		} catch (IOException e) {
-			logger.log(Level.WARNING, e.toString());
+			LOGGER.log(Level.WARNING, e.toString());
 			
 		} finally {
-			// Close the input reader
 			try {
 				bufferedReader.close();
 			} catch(IOException e) {
-				logger.log(Level.WARNING, e.toString());
+				LOGGER.log(Level.WARNING, e.toString());
 			}
 		}
 		
 		// If we are logging at FINE level, wait for the exit code
-		if (logger.isLoggable(Level.FINE)) {
+		if (LOGGER.isLoggable(Level.FINE)) {
 			try {
-				int exitVal = process.waitFor();
-				logger.log(Level.FINE, "Process exitValue: " + exitVal);
+				final int exitVal = process.waitFor();
+				LOGGER.log(Level.FINE, "Process exitValue: " + exitVal);
 			} catch (InterruptedException e) {
-				logger.log(Level.WARNING,
+				LOGGER.log(Level.WARNING,
 						"Problem waiting for completion." + e.toString());
 			}
 		}
