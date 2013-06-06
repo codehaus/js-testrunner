@@ -116,7 +116,7 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>9.0.3.v20130506</version>
+            <version>8.1.11.v20130520</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>

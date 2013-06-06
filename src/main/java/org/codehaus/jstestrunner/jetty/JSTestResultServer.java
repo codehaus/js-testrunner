@@ -27,10 +27,10 @@ import org.codehaus.jstestrunner.TestResultProducer;
 import org.codehaus.jstestrunner.jetty.JSTestResultHandler.JSTestResult;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 
 /**
  * A server responsible for obtaining results from an execution.
@@ -86,7 +86,7 @@ public class JSTestResultServer {
 	 */
 	private void initWebServer() {
 
-		final ServerConnector connector = new ServerConnector(webServer);
+		final SelectChannelConnector connector = new SelectChannelConnector();
 		connector.setPort(port);
 		webServer.addConnector(connector);
 
